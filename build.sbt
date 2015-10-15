@@ -1,8 +1,8 @@
-name := """stream-example"""
+name := "fp-practice"
 
 version := "1.0-SNAPSHOT"
 
-scalaVersion := "2.11.6"
+scalaVersion := "2.11.7"
 
 scalacOptions ++= Seq(
   "-deprecation",
@@ -17,4 +17,7 @@ scalacOptions ++= Seq(
   "-Ywarn-value-discard",
   "-Xfuture")
 
-libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.1.4"
+libraryDependencies ++= Seq(
+   "org.scalaz"     %% "scalaz-core" % "7.1.4"
+  ,"org.scalacheck" %% "scalacheck"  % "1.12.5" % "test"
+)
