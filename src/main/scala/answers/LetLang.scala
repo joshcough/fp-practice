@@ -3,11 +3,11 @@ package answers
 object LetLang {
 
   trait Exp
-  case class Num(i:Int)                       extends Exp
-  case class Add (l:Exp, r:Exp)               extends Exp
-  case class Mult(l:Exp, r:Exp)               extends Exp
-  case class Var (v: String)                  extends Exp
-  case class Let (v: (String, Exp), body:Exp) extends Exp
+    case class Num(i:Int)                       extends Exp
+    case class Add (l:Exp, r:Exp)               extends Exp
+    case class Mult(l:Exp, r:Exp)               extends Exp
+    case class Var (v: String)                  extends Exp
+    case class Let (v: (String, Exp), body:Exp) extends Exp
 
   type Env = Map[String, Int]
 

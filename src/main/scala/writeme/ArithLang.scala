@@ -1,11 +1,19 @@
 package writeme
 
+/**
+ * ArithLang - A very simple expression 'language'.
+ * For this language, and all others, see the README
+ * for detailed documentation.
+ *
+ * Your job:
+ *   Implement the ??? in interp, make the tests pass.
+ */
 object ArithLang {
 
   trait Exp
-  case class Num(i:Int)         extends Exp
-  case class Add (l:Exp, r:Exp) extends Exp
-  case class Mult(l:Exp, r:Exp) extends Exp
+    case class Num(i:Int)         extends Exp
+    case class Add (l:Exp, r:Exp) extends Exp
+    case class Mult(l:Exp, r:Exp) extends Exp
 
   def interp(node: Exp): Int = node match {
     case Num (i)   => ???

@@ -3,9 +3,9 @@ package answers
 object ArithLang {
 
   trait Exp
-  case class Num(i:Int)         extends Exp
-  case class Add (l:Exp, r:Exp) extends Exp
-  case class Mult(l:Exp, r:Exp) extends Exp
+    case class Num(i:Int)         extends Exp
+    case class Add (l:Exp, r:Exp) extends Exp
+    case class Mult(l:Exp, r:Exp) extends Exp
 
   def interp(node: Exp): Int = node match {
     case Num (i)   => i

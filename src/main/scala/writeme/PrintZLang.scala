@@ -10,11 +10,11 @@ object PrintZLang {
   import scalaz.syntax.foldable._
 
   trait Exp
-  case class Num  (i:Int)             extends Exp
-  case class Add  (l:Exp, r:Exp)      extends Exp
-  case class Mult (l:Exp, r:Exp)      extends Exp
-  case class Print(e: Exp)            extends Exp
-  case class Statements(es:List[Exp]) extends Exp
+    case class Num  (i:Int)             extends Exp
+    case class Add  (l:Exp, r:Exp)      extends Exp
+    case class Mult (l:Exp, r:Exp)      extends Exp
+    case class Print(e: Exp)            extends Exp
+    case class Statements(es:List[Exp]) extends Exp
 
   type Env    = Map[String, Int]
   type Output = List[String]
