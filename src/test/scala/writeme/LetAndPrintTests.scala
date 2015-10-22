@@ -1,14 +1,17 @@
 package writeme
 
 import LetAndPrintLang._
+import org.scalacheck.Prop._
+import org.scalacheck.Properties
 
-object LetAndPrintTests {
-  def main(args:Array[String]): Unit = {
-    run(n"7", 7)
-    run(Add (n"5", n"6"), 11)
-    run(Mult(n"5", n"6"), 30)
-    run(Let(("x",  n"5"), v"x"), 5)
-    run(Let(("x",  n"9"), Mult(v"x", v"x")), 81)
-    println("success!!")
+object LetAndPrintTests extends Properties("LetAndPrint") {
+
+  def test(exp: Exp, expected: (List[Int],Int)): Unit = {
+    property(exp.toString) = secure { interp(exp) == expected }
+    ()
   }
+
+  test(n"7", (Nil,7))
+  test(Add (n"5", n"6"), (Nil,11))
+  test(Mult(n"5", n"6"), (Nil,30))
 }
