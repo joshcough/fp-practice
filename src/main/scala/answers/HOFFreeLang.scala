@@ -2,6 +2,7 @@ package answers
 
 import scalaz._
 import scalaz.std.anyVal.intInstance
+import scalaz.std.string.stringInstance
 import scala.language.implicitConversions
 
 object HOFFreeLang {
@@ -72,8 +73,20 @@ object HOFFreeLang {
       x <- Prim(1)
       y <- add(2, x)
     } yield y
+
+    val test2 = for {
+      x <- Prim("hello")
+      y <- add(x, "world")
+    } yield y
+
+    val test3 = for {
+      x <- Prim(1)
+      y <- Prim("hello")
+      z <- add(y, "world")
+      a <- add(x, 6)
+    } yield a
+
 //    val x = Free.runFC(test)(interp).run(Map.empty[String, Int])._2
-//    println(x)
   }
 
   def add[A](l: A, r: A)(implicit m: Monoid[A]) =
