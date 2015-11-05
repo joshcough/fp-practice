@@ -24,38 +24,46 @@ object MemoryLang {
     env.getOrElse(v, sys.error(s"unbound variable: $v, env: $env, mem: $mem"))
 
   def readMem(addr: Int, mem: Mem, env: Env): Int =
-    mem.getOrElse(addr, sys.error(s"null pointer: $addr, env: $env"))
+    mem.getOrElse(addr, sys.error(s"null pointer: $addr, env: $env, mem: $mem"))
 
   def interp(node: Exp,
              env: Env=Map(),
-             mem: Mem=Map()): (Int,Mem) = node match {
-    case Num (i)   => (i,mem)
-    case Add (l,r) =>
-      val (il,meml) = interp(l,env, mem)
-      val (ir,memr) = interp(r,env, meml)
-      (il+ir, memr)
-    case Mult(l,r) =>
-      val (il,meml) = interp(l,env, mem)
-      val (ir,memr) = interp(r,env, meml)
-      (il*ir, memr)
-    case Var (x)   => (lookup(x,env,mem), mem)
-    case Let ((x,e),b) =>
-      val (eValue,memx) = interp(e, env, mem)
-      interp(b, env + (x -> eValue), memx)
-    case SetMem(address:Int, e:Exp) =>
-      val (eValue,memx) = interp(e, env, mem)
-      // we can return any value here...
-      (0, memx + (address -> eValue))
-    case GetMem(addr:Int) => (readMem(addr, mem, env), mem)
-    case Statements(es)   =>
-      es.foldLeft((0,mem)){ case ((_,memacc),e) =>
-        interp(e, env, memacc)
-      }
+             mem: Mem=Map()): (Int, Mem) = node match {
+    case Num (i)   => ???
+    case Add (l,r) => ???
+    case Mult(l,r) => ???
+    case Var (x)   => ???
+    case Let ((x,e),b) => ???
+    case SetMem(address:Int, e:Exp) => ???
+    case GetMem(addr:Int) => ???
+    case Statements(es)   => ???
   }
 
-  def run(node: Exp, expected: Int) = {
+  def run(node: Exp, expected: (Int, Mem)) = {
     val (i,m) = interp(node)
-    if(i!=expected) sys.error(s"expected: $expected, but got: $i")
+    println(i -> m)
+    if((i,m)!=expected) sys.error(s"expected: $expected, but got: $i")
+  }
+
+  def main (args: Array[String]): Unit = {
+    run(SetMem(0, n"10"), (10 ,Map(0 -> 10)))
+    run(Statements(List(SetMem(0, n"10"), GetMem(0))), (10, Map(0 -> 10)))
+    run(Statements(List(
+      SetMem(0, n"10"),
+      SetMem(0, n"15"),
+      GetMem(0))), (15, Map(0 -> 15)))
+
+    //
+    //  {
+    //    set(0 -> 10)
+    //    set(1, { val x = 42 + get(0); set(2, x) })
+    //    get(0)
+    //  }
+    //
+
+    run(Statements(List(
+      SetMem(0, n"10"),
+      SetMem(1, Let(("x", Add(n"42", GetMem(0))), SetMem(2, v"x"))),
+      GetMem(0))), (10, Map(0 -> 10, 1 -> 52, 2 -> 52)))
   }
 }
-
