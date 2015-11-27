@@ -1,9 +1,9 @@
-package answers
+package answers.let.monadic
 
-import scalaz.{Functor, Free, ~>, State}
 import scala.language.implicitConversions
+import scalaz.{Free, State, ~>}
 
-object LetLangFree {
+object LetFree {
 
   sealed trait Exp[A]
     final case class Num[A](v: Int, n: Int => A) extends Exp[A]
@@ -42,7 +42,7 @@ object LetLangFree {
       case Add(v, v2, n) => State((e: Env) => (e, n(v+v2)))
       case Mult(v, v2, n) => State((e: Env) => (e, n(v*v2)))
       case Var(s, n) => State((e: Env) => (e, n(lookup(s, e))))
-      case Let(k, v, n) => State((e: Env) => ((e ++ Map(k -> v)), n))
+      case Let(k, v, n) => State((e: Env) => (e ++ Map(k -> v), n))
     }
   }
 

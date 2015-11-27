@@ -1,13 +1,13 @@
-package answers
+package answers.print.scalaz
 
 // With Writer Monad
 object PrintZLang {
 
   import scalaz.Writer
   import scalaz.std.list._
-  import scalaz.syntax.writer._
   import scalaz.syntax.applicative._
   import scalaz.syntax.foldable._
+  import scalaz.syntax.writer._
 
   trait Exp
     case class Num  (i:Int)             extends Exp

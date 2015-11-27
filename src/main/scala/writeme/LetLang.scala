@@ -1,5 +1,7 @@
 package writeme
 
+import scalaz.Monad
+
 object LetLang {
 
   trait Exp
@@ -49,11 +51,20 @@ object LetLangOption {
   }
 
   def interp(node: Exp, env: Env=Map()): Option[Int] = node match {
-    case Num (i)   => ???
-    case Add (l,r) => ???
-    case Mult(l,r) => ???
-    case Var (v)   => ???
-    case Let ((x,e),b) => ???
+    case Num (i)   => Some(i)
+    case Add (l,r) => for {
+      i <- interp(l, env)
+      j <- interp(r, env)
+    } yield i + j
+    case Mult(l,r) => for {
+      i <- interp(l, env)
+      j <- interp(r, env)
+    } yield i * j
+    case Var (v)   => env.get(v)
+    case Let ((x,e),b) => for {
+      i <- interp(e, env)
+      j <- interp(b, env + (x -> i))
+    } yield j
   }
 
   def run(node: Exp, expected: Option[Int]) = {
@@ -84,11 +95,20 @@ object LetLangDisjunction {
   type Result = String \/ Int
 
   def interp(node: Exp, env: Env=Map()): Result = node match {
-    case Num (i)   => ???
-    case Add (l,r) => ???
-    case Mult(l,r) => ???
-    case Var (v)   => ???
-    case Let ((x,e),b) => ???
+    case Num (i)   => i.right
+    case Add (l,r) => for {
+      i <- interp(l, env)
+      j <- interp(r, env)
+    } yield i + j
+    case Mult(l,r) => for {
+      i <- interp(l, env)
+      j <- interp(r, env)
+    } yield i * j
+    case Var (v)   => env.get(v).fold[Result](s"unbound variable $v".left)(_.right)
+    case Let ((x,e),b) => for {
+      i <- interp(e, env)
+      j <- interp(b, env + (x -> i))
+    } yield j
   }
 
   def run(node: Exp, expected: String \/ Int) = {
@@ -108,6 +128,14 @@ object LetLangEither {
 
   type Env = Map[String, Int]
 
+  implicit val eitherMonad: Monad[Either[String, ?]] =
+    new Monad[Either[String, ?]] {
+      def point[A](a: => A): Either[String, A] = Right(a)
+      def bind[A, B](e: Either[String, A])
+                    (f: A => Either[String, B]): Either[String, B] =
+        e.fold[Either[String, B]](Left(_), (a:A) => f(a))
+    }
+
   implicit class Parser(val sc: StringContext) extends AnyVal {
     def v(args: Any*): Var = Var(sc.parts.mkString)
     def n(args: Any*): Num = Num(sc.parts.mkString.toInt)
@@ -115,19 +143,23 @@ object LetLangEither {
 
   type Result = Either[String, Int]
 
-  implicit class RichEither[E,A](e:Either[E,A]) {
-    def map[B](f: A => B): Either[E,B] =
-      e.fold(Left(_), (a:A) => Right(f(a)))
-    def flatMap[B](f: A => Either[E,B]): Either[E,B] =
-      e.fold(Left(_), (a: A) => f(a))
-  }
+  import scalaz.syntax.monad._
 
   def interp(node: Exp, env: Env=Map()): Result = node match {
-    case Num (i)   => ???
-    case Add (l,r) => ???
-    case Mult(l,r) => ???
-    case Var (v)   => ???
-    case Let ((x,e),b) => ???
+    case Num (i)   => Right(i)
+    case Add (l,r) => for {
+      i <- interp(l, env)
+      j <- interp(r, env)
+    } yield i + j
+    case Mult(l,r) => for {
+      i <- interp(l, env)
+      j <- interp(r, env)
+    } yield i * j
+    case Var (v)   => env.get(v).fold[Result](Left(s"unbound variable $v"))(Right(_))
+    case Let ((x,e),b) => for {
+      i <- interp(e, env)
+      j <- interp(b, env + (x -> i))
+    } yield j
   }
 
   def run(node: Exp, expected: Either[String, Int]) = {
@@ -160,13 +192,23 @@ object LetLangMonad {
     env.getOrElse(v, sys.error(s"unbound variable: $v, env: $env"))
 
   def interp[F[_]](node: Exp, env: Env=Map())
-                  (implicit m: Monad[F]): F[Int] =
+                     (implicit m: Monad[F]): F[Int] =
     node match {
-      case Num (i)   => ???
-      case Add (l,r) => ???
-      case Mult(l,r) => ???
-      case Var (v)   => ???
-      case Let ((x,e),b) => ???
+      case Num (i)   => m.point(i)
+      case Add (l,r) => for {
+        i <- interp(l, env)
+        j <- interp(r, env)
+      } yield i + j
+      case Mult(l,r) => for {
+        i <- interp(l, env)
+        j <- interp(r, env)
+      } yield i * j
+      case Var (v)   => lookup(v, env).point[F]
+      case Let ((x,e),b) => for {
+        i <- interp(e, env)
+        j <- interp(b, env + (x -> i))
+      } yield j
+
     }
 
   def run[F[_]](node: Exp, expected: F[Int])
@@ -227,22 +269,31 @@ object LetLangMonadError {
   }
 
   def lookup[F[_,_]](v: String, env: Env)
-                    (implicit m: MonadError[F, String]): F[String, Int] =
-    env.get(v).fold[F[String, Int]](
-        s"unbound variable $v".raiseError[F,Int])((i: Int) => m.point(i))
+                    (implicit m: MonadError[F, Double]): F[Double, Int] =
+    env.get(v).fold[F[Double, Int]](
+      m.raiseError(v.length.toDouble))((i: Int) => m.point(i))
 
   def interp[F[_,_]](node: Exp, env: Env=Map())
-                    (implicit m: MonadError[F, String]): F[String, Int] =
+                    (implicit m: MonadError[F, Double]): F[Double, Int] =
     node match {
-      case Num (i)   => ???
-      case Add (l,r) => ???
-      case Mult(l,r) => ???
-      case Var (v)   => ???
-      case Let ((x,e),b) => ???
+      case Num(i) => m.point(i)
+      case Add(l, r) => for {
+        i <- interp(l, env)
+        j <- interp(r, env)
+      } yield i + j
+      case Mult(l, r) => for {
+        i <- interp(l, env)
+        j <- interp(r, env)
+      } yield i * j
+      case Var(v) => lookup(v, env)
+      case Let((x, e), b) => for {
+        i <- interp(e, env)
+        j <- interp(b, env + (x -> i))
+      } yield j
     }
 
-  def run[F[_,_]](node: Exp, expected: F[String, Int])
-                 (implicit m: MonadError[F, String]): F[String, Int] = {
+  def run[F[_,_]](node: Exp, expected: F[Double, Int])
+                 (implicit m: MonadError[F, Double]): F[Double, Int] = {
     val i = interp(node)
     if(i!=expected) sys.error(s"expected: $expected, but got: $i")
     i
@@ -253,10 +304,10 @@ object LetLangMonadError {
     import scalaz.Scalaz._
 
     println(run[\/](Num(6),       6.right))
-    println(run[\/](Var("x"),     "unbound variable x".left))
+    println(run[\/](Var("x"),     1.0.left))
 
-    println(run[Either](Num(6),   Right(6)))
-    println(run[Either](Var("x"), Left("unbound variable x")))
+    println(run[Either](Num(6),     Right(6)))
+    println(run[Either](Var("xxx"), Left(3.0)))
 
   }
 }

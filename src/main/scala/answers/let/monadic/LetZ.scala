@@ -1,7 +1,7 @@
-package answers
+package answers.let.monadic
 
 // With Reader Monad
-object LetZLang {
+object LetZ {
 
   import scalaz._
   import Scalaz._
@@ -29,12 +29,10 @@ object LetZLang {
   def interp(node: Exp): R[Int] = node match {
     case Num (i)   => i.point[R]
     case Add (l,r) => for {
-      env <- ask[Id,Env]
       lx  <- interp(l)
       rx  <- interp(r)
     } yield lx + rx
     case Mult(l,r) => for {
-      env <- ask[Id,Env]
       lx  <- interp(l)
       rx  <- interp(r)
     } yield lx * rx

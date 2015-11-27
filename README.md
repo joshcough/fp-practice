@@ -12,9 +12,9 @@ later on in this project.
 
 Here, I'll list (and describe) them in the order they should be implemented.
 
-## ArithLang
+## FirstLang
 
-ArithLang is the simplest language you will ever write.
+FirstLang is the simplest language you will ever write.
 It supports numbers, addition, and multiplication. That's it.
 
 #### Grammar

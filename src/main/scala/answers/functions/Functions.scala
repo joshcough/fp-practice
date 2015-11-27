@@ -1,6 +1,6 @@
-package answers
+package answers.functions
 
-object HOFLang {
+object Functions {
 
   trait Exp
     case class Num(i:Int)                        extends Exp

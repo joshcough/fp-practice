@@ -1,11 +1,11 @@
-package answers
+package answers.functions
 
+import scala.language.implicitConversions
 import scalaz._
 import scalaz.std.anyVal.intInstance
 import scalaz.std.string.stringInstance
-import scala.language.implicitConversions
 
-object HOFFreeLang {
+object FunctionsFree {
 
   trait Exp[A]
     case class Prim[A](a: A)                              extends Exp[A]
@@ -26,16 +26,16 @@ object HOFFreeLang {
     }
   }
 
-  trait RuntimeValue[A]
+  implicit val ExpMonad = new Monad[Exp] {
+    def point[A](a: => A): Exp[A] = ???
+    def bind[A, B](fa: Exp[A])(f: (A) => Exp[B]): Exp[B] = ???
+  }
+
+    trait RuntimeValue[A]
     case class PrimV  [A](a: A)                       extends RuntimeValue[A]
     case class Closure[A](f:Function[A], env: Env[A]) extends RuntimeValue[A]
 
   type Env[A] = Map[String, RuntimeValue[A]]
-
-  implicit class Parser(val sc: StringContext) extends AnyVal {
-    def v[A](args: Any*): Var[A]    = Var(sc.parts.mkString)
-    def n   (args: Any*): Prim[Int] = Prim(sc.parts.mkString.toInt)
-  }
 
   def lookup[A](v: String, env: Env[A]): RuntimeValue[A] =
     env.getOrElse(v, sys.error(s"unbound variable: $v, env: $env"))
@@ -65,6 +65,13 @@ object HOFFreeLang {
     if(i!=expected) sys.error(s"expected: $expected, but got: $i")
     else println(i)
   }
+
+  //Free[S[_], A]
+  //  final def fold[B]
+  // (r: A => B, s: S[Free[S, A]] => B)(implicit S: Functor[S]): B =
+
+  def something[A](f:Free[Exp, A])(implicit m: Monoid[A]) =
+    f.fold(m.append(m.zero, _), e => ???)
 
   def main (args: Array[String]): Unit = {
     type LLProg[A] = Free.FreeC[Exp, A]
