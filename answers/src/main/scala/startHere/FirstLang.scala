@@ -1,8 +1,5 @@
 package startHere
 
-/**
-  * Start Here
-  */
 object FirstLang {
 
   trait Exp
@@ -10,14 +7,10 @@ object FirstLang {
     case class Add (l:Exp, r:Exp) extends Exp
     case class Mult(l:Exp, r:Exp) extends Exp
 
-  /**
-    * FILL ME IN
-    * @param node
-    * @return
-    */
-  def interp(node: Exp): Int = node match {
+  def interp(exp: Exp): Int = exp match {
     case Num (i)   => i
     case Add (l,r) => interp(l) + interp(r)
     case Mult(l,r) => interp(l) * interp(r)
   }
+
 }

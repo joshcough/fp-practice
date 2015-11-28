@@ -30,8 +30,8 @@ object PrintZLang {
   def lookup(v: String, env: Env): W[Int] =
     env.getOrElse(v, die(s"unbound variable: $v", env)).pure[W]
 
-  def interp(node: Exp, env: Env=Map()): W[Int]  =
-    node match {
+  def interp(exp: Exp, env: Env=Map()): W[Int]  =
+    exp match {
       case Num (i)        => i.pure[W]
       case Add (l,r)      => for {
         lv <- interp(l,env)
@@ -48,8 +48,8 @@ object PrintZLang {
       case Statements(es) => es.foldlM(0)(_ => e => interp(e, env))
     }
 
-  def run(node: Exp, expected: Int) = {
-    val (out,i) = interp(node).run
+  def run(exp: Exp, expected: Int) = {
+    val (out,i) = interp(exp).run
     if(i!=expected) sys.error(s"expected: $expected, but got: $i")
   }
 }

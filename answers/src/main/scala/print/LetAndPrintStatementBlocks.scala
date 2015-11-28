@@ -20,10 +20,10 @@ object LetAndPrintStatementBlocks {
   def lookup(v: String, env: Env, output: Output): Int =
     env.getOrElse(v, die(s"unbound variable: $v", env, output))
 
-  def interp(node: Exp,
+  def interp(exp: Exp,
              env: Env=Map(),
              output: Output=List()): (Output, Int)  =
-    node match {
+    exp match {
       case Num (i)        => (output, i)
       case Add (l,r)      =>
         val (lo,lv) = interp(l,env,output)

@@ -15,8 +15,8 @@ object PrintStdOut {
 
   type Output = List[String]
 
-  def interp(node: Exp): Int  =
-    node match {
+  def interp(exp: Exp): Int  =
+    exp match {
       case Num (i)   => ???
       case Add (l,r) => ???
       case Mult(l,r) => ???

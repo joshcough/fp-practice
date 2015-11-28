@@ -8,12 +8,9 @@ import LetAST._
   */
 object ErrorHandling {
 
-  /**
-    *
-    */
   object LetLangOption {
 
-    def interp(node: Exp, env: Env=Map()): Option[Int] = node match {
+    def interp(exp: Exp, env: Env=Map()): Option[Int] = exp match {
       case Num (i)   => Some(i)
       case Add (l,r) => for {
         ll <- interp(l,env)
@@ -31,9 +28,6 @@ object ErrorHandling {
     }
   }
 
-  /**
-    *
-    */
   object LetLangEither {
 
     type Result = Either[String, Int]
@@ -45,7 +39,7 @@ object ErrorHandling {
         e.fold(Left(_), (a: A) => f(a))
     }
 
-    def interp(node: Exp, env: Env=Map()): Result = node match {
+    def interp(exp: Exp, env: Env=Map()): Result = exp match {
       case Num (i)   => Right(i)
       case Add (l,r) => for {
         ll <- interp(l,env)
@@ -63,15 +57,12 @@ object ErrorHandling {
       } yield z
     }
 
-    def run(node: Exp, expected: Either[String, Int]) = {
-      val i = interp(node)
+    def run(exp: Exp, expected: Either[String, Int]) = {
+      val i = interp(exp)
       if(i!=expected) sys.error(s"expected: $expected, but got: $i")
     }
   }
 
-  /**
-    *
-    */
   object LetLangDisjunction {
 
     import scalaz.\/
@@ -79,7 +70,7 @@ object ErrorHandling {
 
     type Result = String \/ Int
 
-    def interp(node: Exp, env: Env=Map()): Result = node match {
+    def interp(exp: Exp, env: Env=Map()): Result = exp match {
       case Num (i)   => i.right
       case Add (l,r) => for {
         ll <- interp(l,env)
@@ -98,9 +89,6 @@ object ErrorHandling {
     }
   }
 
-  /**
-    *
-    */
   object LetLangMonad {
 
     import scala.language.higherKinds
@@ -110,9 +98,9 @@ object ErrorHandling {
     def lookup(v: String, env: Env): Int =
       env.getOrElse(v, sys.error(s"unbound variable: $v, env: $env"))
 
-    def interp[F[_]](node: Exp, env: Env=Map())
+    def interp[F[_]](exp: Exp, env: Env=Map())
                     (implicit m: Monad[F]): F[Int] =
-      node match {
+      exp match {
         case Num (i)   => m.point(i)
         case Add (l,r) => for {
           ll <- interp(l,env)
@@ -129,9 +117,9 @@ object ErrorHandling {
         } yield z
       }
 
-    def run[F[_]](node: Exp, expected: F[Int])
+    def run[F[_]](exp: Exp, expected: F[Int])
                  (implicit m: Monad[F]): F[Int] = {
-      val i = interp(node)
+      val i = interp(exp)
       if(i!=expected) sys.error(s"expected: $expected, but got: $i")
       i
     }
@@ -164,9 +152,6 @@ object ErrorHandling {
     }
   }
 
-  /**
-    *
-    */
   object LetLangMonadError {
 
     import scala.language.higherKinds
@@ -187,9 +172,9 @@ object ErrorHandling {
       env.get(v).fold[F[String, Int]](
         s"unbound variable $v".raiseError[F,Int])((i: Int) => m.point(i))
 
-    def interp[F[_,_]](node: Exp, env: Env=Map())
+    def interp[F[_,_]](exp: Exp, env: Env=Map())
                       (implicit m: MonadError[F, String]): F[String, Int] =
-      node match {
+      exp match {
         case Num (i)   => m.point(i)
         case Add (l,r) => for {
           ll <- interp(l,env)
@@ -206,9 +191,9 @@ object ErrorHandling {
         } yield z
       }
 
-    def run[F[_,_]](node: Exp, expected: F[String, Int])
+    def run[F[_,_]](exp: Exp, expected: F[String, Int])
                    (implicit m: MonadError[F, String]): F[String, Int] = {
-      val i = interp(node)
+      val i = interp(exp)
       if(i!=expected) sys.error(s"expected: $expected, but got: $i")
       i
     }

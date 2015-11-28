@@ -18,9 +18,9 @@ object LetAndPrint {
       s"unbound variable, env: $env, output: ${output.mkString("\n")}"
     ))
 
-  def interp(node: Exp, env: Env=Map(),
+  def interp(exp: Exp, env: Env=Map(),
              output: Output=List()): (Output, Int) =
-    node match {
+    exp match {
       case Num (i)       => (output, i)
       case Add (l,r)     =>
         val (lo,lv) = interp(l,env,output)

@@ -13,7 +13,7 @@ object ErrorHandling {
     */
   object LetLangOption {
 
-    def interp(node: Exp, env: Env=Map()): Option[Int] = node match {
+    def interp(exp: Exp, env: Env=Map()): Option[Int] = exp match {
       case Num (i)   => ???
       case Add (l,r) => ???
       case Mult(l,r) => ???
@@ -36,7 +36,7 @@ object ErrorHandling {
         e.fold(Left(_), (a: A) => f(a))
     }
 
-    def interp(node: Exp, env: Env=Map()): Result = node match {
+    def interp(exp: Exp, env: Env=Map()): Result = exp match {
       case Num (i)   => ???
       case Add (l,r) => ???
       case Mult(l,r) => ???
@@ -44,8 +44,8 @@ object ErrorHandling {
       case Let ((x,e),b) => ???
     }
 
-    def run(node: Exp, expected: Either[String, Int]) = {
-      val i = interp(node)
+    def run(exp: Exp, expected: Either[String, Int]) = {
+      val i = interp(exp)
       if(i!=expected) sys.error(s"expected: $expected, but got: $i")
     }
   }
@@ -60,7 +60,7 @@ object ErrorHandling {
 
     type Result = String \/ Int
 
-    def interp(node: Exp, env: Env=Map()): Result = node match {
+    def interp(exp: Exp, env: Env=Map()): Result = exp match {
       case Num (i)   => ???
       case Add (l,r) => ???
       case Mult(l,r) => ???
@@ -81,9 +81,9 @@ object ErrorHandling {
     def lookup(v: String, env: Env): Int =
       env.getOrElse(v, sys.error(s"unbound variable: $v, env: $env"))
 
-    def interp[F[_]](node: Exp, env: Env=Map())
+    def interp[F[_]](exp: Exp, env: Env=Map())
                     (implicit m: Monad[F]): F[Int] =
-      node match {
+      exp match {
         case Num (i)   => ???
         case Add (l,r) => ???
         case Mult(l,r) => ???
@@ -91,9 +91,9 @@ object ErrorHandling {
         case Let ((x,e),b) => ???
       }
 
-    def run[F[_]](node: Exp, expected: F[Int])
+    def run[F[_]](exp: Exp, expected: F[Int])
                  (implicit m: Monad[F]): F[Int] = {
-      val i = interp(node)
+      val i = interp(exp)
       if(i!=expected) sys.error(s"expected: $expected, but got: $i")
       i
     }
@@ -149,9 +149,9 @@ object ErrorHandling {
       env.get(v).fold[F[String, Int]](
         s"unbound variable $v".raiseError[F,Int])((i: Int) => m.point(i))
 
-    def interp[F[_,_]](node: Exp, env: Env=Map())
+    def interp[F[_,_]](exp: Exp, env: Env=Map())
                       (implicit m: MonadError[F, String]): F[String, Int] =
-      node match {
+      exp match {
         case Num (i)   => ???
         case Add (l,r) => ???
         case Mult(l,r) => ???
@@ -159,9 +159,9 @@ object ErrorHandling {
         case Let ((x,e),b) => ???
       }
 
-    def run[F[_,_]](node: Exp, expected: F[String, Int])
+    def run[F[_,_]](exp: Exp, expected: F[String, Int])
                    (implicit m: MonadError[F, String]): F[String, Int] = {
-      val i = interp(node)
+      val i = interp(exp)
       if(i!=expected) sys.error(s"expected: $expected, but got: $i")
       i
     }

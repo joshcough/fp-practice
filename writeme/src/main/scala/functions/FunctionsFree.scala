@@ -40,8 +40,8 @@ object FunctionsFree {
   def lookup[A](v: String, env: Env[A]): RuntimeValue[A] =
     env.getOrElse(v, sys.error(s"unbound variable: $v, env: $env"))
 
-  def interp[A](node: Exp[A], env:  Env[A])
-               (implicit m: Monoid[A]): RuntimeValue[A] = node match {
+  def interp[A](exp: Exp[A], env:  Env[A])
+               (implicit m: Monoid[A]): RuntimeValue[A] = exp match {
     case Prim(a)        => PrimV(a)
     case Add (l,r)      => math(interp(l,env), interp(r,env))
     case Var (x)        => lookup(x, env)
@@ -60,8 +60,8 @@ object FunctionsFree {
       case bad => sys.error(s"can't combine: $bad")
     }
 
-  def run[A](node: Exp[A], expected: RuntimeValue[A])(implicit m: Monoid[A]) = {
-    val i: RuntimeValue[A] = interp[A](node, Map())
+  def run[A](exp: Exp[A], expected: RuntimeValue[A])(implicit m: Monoid[A]) = {
+    val i: RuntimeValue[A] = interp[A](exp, Map())
     if(i!=expected) sys.error(s"expected: $expected, but got: $i")
     else println(i)
   }

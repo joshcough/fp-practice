@@ -1,10 +1,5 @@
 package print
 
-/**
-  * FirstLang with Print statements added.
-  * Print statements result in their values being printed to std out.
-  * TODO: add docs about why this is interesting
-  */
 object PrintStdOut {
 
   trait Exp
@@ -15,8 +10,8 @@ object PrintStdOut {
 
   type Output = List[String]
 
-  def interp(node: Exp): Int  =
-    node match {
+  def interp(exp: Exp): Int  =
+    exp match {
       case Num (i)   => i
       case Add (l,r) => interp(l) + interp(r)
       case Mult(l,r) => interp(l) * interp(r)

@@ -25,7 +25,7 @@ object Functions {
   def lookup(v: String, env: Env): RuntimeValue =
     env.getOrElse(v, sys.error(s"unbound variable: $v, env: $env"))
 
-  def interp(node: Exp, env: Env=Map()): RuntimeValue = node match {
+  def interp(exp: Exp, env: Env=Map()): RuntimeValue = exp match {
     case Num (i)        => ???
     case Add (l,r)      => ???
     case Mult(l,r)      => ???
@@ -41,8 +41,8 @@ object Functions {
     case bad => sys.error(s"can't add: $bad")
   }
 
-  def run(node: Exp, expected: RuntimeValue) = {
-    val i = interp(node)
+  def run(exp: Exp, expected: RuntimeValue) = {
+    val i = interp(exp)
     if(i!=expected) sys.error(s"expected: $expected, but got: $i")
     else println(i)
   }

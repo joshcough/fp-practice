@@ -30,8 +30,8 @@ object PrintZLang {
   def lookup(v: String, env: Env): W[Int] =
     env.getOrElse(v, die(s"unbound variable: $v", env)).pure[W]
 
-  def interp(node: Exp, env: Env=Map()): W[Int]  =
-    node match {
+  def interp(exp: Exp, env: Env=Map()): W[Int]  =
+    exp match {
       case Num (i)        => ???
       case Add (l,r)      => ???
       case Mult(l,r)      => ???
