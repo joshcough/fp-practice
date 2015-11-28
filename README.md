@@ -30,6 +30,10 @@ Here's the recommended order in which you should implement the languages:
 * `functions.HOF`       - Contains let and first class functions
 * `memory.Memory`       - Contains statement blocks and memory, with get and set expressions
 
+However, each language is completely self-contained, so you could 
+pick any of the languages to implement first. This is especially true
+if you are experienced and want to move right to more advanced languages.
+
 ## FirstLang
 
 FirstLang is the simplest language you will ever write.

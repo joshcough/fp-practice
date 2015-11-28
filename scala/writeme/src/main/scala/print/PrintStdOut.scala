@@ -13,8 +13,6 @@ object PrintStdOut {
     case class Mult (l:Exp, r:Exp) extends Exp
     case class Print(e: Exp)       extends Exp
 
-  type Output = List[String]
-
   def interp(exp: Exp): Int  =
     exp match {
       case Num (i)   => ???

@@ -13,13 +13,14 @@ object ErrorHandling {
     */
   object LetLangOption {
 
-    def interp(exp: Exp, env: Env=Map()): Option[Int] = exp match {
-      case Num (i)   => ???
-      case Add (l,r) => ???
-      case Mult(l,r) => ???
-      case Var (v)   => ???
-      case Let ((x,e),b) => ???
-    }
+    def interp(exp: Exp, env: Env=Map()): Option[Int] =
+      exp match {
+        case Num (i)       => ???
+        case Add (l,r)     => ???
+        case Mult(l,r)     => ???
+        case Var (v)       => ???
+        case Let ((x,e),b) => ???
+      }
   }
 
   /**
@@ -36,18 +37,14 @@ object ErrorHandling {
         e.fold(Left(_), (a: A) => f(a))
     }
 
-    def interp(exp: Exp, env: Env=Map()): Result = exp match {
-      case Num (i)   => ???
-      case Add (l,r) => ???
-      case Mult(l,r) => ???
-      case Var (v)   => ???
-      case Let ((x,e),b) => ???
-    }
-
-    def run(exp: Exp, expected: Either[String, Int]) = {
-      val i = interp(exp)
-      if(i!=expected) sys.error(s"expected: $expected, but got: $i")
-    }
+    def interp(exp: Exp, env: Env=Map()): Result =
+      exp match {
+        case Num (i)       => ???
+        case Add (l,r)     => ???
+        case Mult(l,r)     => ???
+        case Var (v)       => ???
+        case Let ((x,e),b) => ???
+      }
   }
 
   /**
@@ -60,13 +57,14 @@ object ErrorHandling {
 
     type Result = String \/ Int
 
-    def interp(exp: Exp, env: Env=Map()): Result = exp match {
-      case Num (i)   => ???
-      case Add (l,r) => ???
-      case Mult(l,r) => ???
-      case Var (v)   => ???
-      case Let ((x,e),b) => ???
-    }
+    def interp(exp: Exp, env: Env=Map()): Result =
+      exp match {
+        case Num (i)       => ???
+        case Add (l,r)     => ???
+        case Mult(l,r)     => ???
+        case Var (v)       => ???
+        case Let ((x,e),b) => ???
+      }
   }
 
   /**
@@ -84,46 +82,12 @@ object ErrorHandling {
     def interp[F[_]](exp: Exp, env: Env=Map())
                     (implicit m: Monad[F]): F[Int] =
       exp match {
-        case Num (i)   => ???
-        case Add (l,r) => ???
-        case Mult(l,r) => ???
-        case Var (v)   => ???
+        case Num (i)       => ???
+        case Add (l,r)     => ???
+        case Mult(l,r)     => ???
+        case Var (v)       => ???
         case Let ((x,e),b) => ???
       }
-
-    def run[F[_]](exp: Exp, expected: F[Int])
-                 (implicit m: Monad[F]): F[Int] = {
-      val i = interp(exp)
-      if(i!=expected) sys.error(s"expected: $expected, but got: $i")
-      i
-    }
-
-    def main(args: Array[String]): Unit = {
-      import scalaz.Scalaz._
-      import scalaz.{Reader, Writer, State, \/}
-
-      // all the common error handling monads
-      println(run[Option](Num(6), 6.some))
-      type V[A] = String \/ A
-      println(run[V](Num(6),      6.right))
-      type E[A] = Either[String,A]
-      println(run[E](Num(6),      Right(6)))
-
-      // one monad you might be surprised to see here.
-      println(run[List](Num(6),   List(6)))
-
-      // some more advanced monads
-      type S[A] = State[Int, A]
-      println(interp[S](Num(6)).run(0))
-      type W[A] = Writer[Int, A]
-      println(interp[W](Num(6)).run)
-      type R[A] = Reader[Int, A]
-      println(interp[R](Num(6)).run(0))
-
-      // this shows that they will all fail in the same way.
-      // this is because Monad by itself doesn't do error handling.
-      println(run[Option](Var("x"), 6.some))
-    }
   }
 
   /**
@@ -152,46 +116,11 @@ object ErrorHandling {
     def interp[F[_,_]](exp: Exp, env: Env=Map())
                       (implicit m: MonadError[F, String]): F[String, Int] =
       exp match {
-        case Num (i)   => ???
-        case Add (l,r) => ???
-        case Mult(l,r) => ???
-        case Var (v)   => ???
+        case Num (i)   =>     ???
+        case Add (l,r) =>     ???
+        case Mult(l,r) =>     ???
+        case Var (v)   =>     ???
         case Let ((x,e),b) => ???
       }
-
-    def run[F[_,_]](exp: Exp, expected: F[String, Int])
-                   (implicit m: MonadError[F, String]): F[String, Int] = {
-      val i = interp(exp)
-      if(i!=expected) sys.error(s"expected: $expected, but got: $i")
-      i
-    }
-
-    def main(args: Array[String]): Unit = {
-      import scalaz.{\/,WriterT}
-      import scalaz.Scalaz._
-      import scalaz.WriterT._
-      import scalaz.Writer._
-      import scalaz.std.string._
-      import scalaz.Id._
-
-      println(run[\/](Num(6), 6.right))
-      println(run[\/](Var("x"),     "unbound variable x".left))
-
-      println(run[Either](Num(6),   Right(6)))
-      println(run[Either](Var("x"), Left("unbound variable x")))
-    }
   }
-
-
-  //
-  //type T[E, A] = MonadError[WriterT[String \/ ?, ?, A] , E]
-  //println(interp[T](Num(6)).run)
-  // hmmmm
-  //(Monoid w, MonadError e m) => MonadError e (WriterT w m)
-  //(Monoid w, Monad m) => MonadWriter w (WriterT w m)
-  //class (Monoid w, Monad m) => MonadWriter w m | m -> w where
-  //newtype WriterT w m a :: * -> (* -> *) -> * -> *
-  //runWriterT :: m (a, w)
-  // final case class WriterT[F[_], W, A](run: F[(W, A)]) { self =>
-
 }

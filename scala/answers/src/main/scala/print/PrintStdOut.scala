@@ -8,16 +8,13 @@ object PrintStdOut {
     case class Mult (l:Exp, r:Exp) extends Exp
     case class Print(e: Exp)       extends Exp
 
-  type Output = List[String]
-
-  def interp(exp: Exp): Int  =
-    exp match {
-      case Num (i)   => i
-      case Add (l,r) => interp(l) + interp(r)
-      case Mult(l,r) => interp(l) * interp(r)
-      case Print(e)  =>
-        val i = interp(e)
-        println(i)
-        i
-    }
+  def interp(exp: Exp): Int  = exp match {
+    case Num (i)   => i
+    case Add (l,r) => interp(l) + interp(r)
+    case Mult(l,r) => interp(l) * interp(r)
+    case Print(e)  =>
+      val i = interp(e)
+      println(i)
+      i
+  }
 }

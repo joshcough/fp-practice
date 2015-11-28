@@ -22,7 +22,7 @@ object LetFree {
   def let(k: String, v: Int) = Let(k, v, v)
 
   val test = for {
-    x <-  num(1)
+    x <- num(1)
     y <- add(2, x)
     _ <- let("foo", 3)
     z <- mult(4, y)

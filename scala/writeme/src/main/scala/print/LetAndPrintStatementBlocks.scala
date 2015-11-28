@@ -14,14 +14,12 @@ object LetAndPrintStatementBlocks {
   type Env    = Map[String, Int]
   type Output = List[String]
 
-  def die[A](msg: String, env: Env, out: Output): A =
-    sys.error(s"error: $msg, env: $env, output: ${out.mkString("\n")}")
-
   def lookup(v: String, env: Env, output: Output): Int =
-    env.getOrElse(v, die(s"unbound variable: $v", env, output))
+    env.getOrElse(v, sys.error(
+      s"unbound variable: $v. env: $env, output: ${output.mkString("\n")}")
+    )
 
-  def interp(exp: Exp,
-             env: Env=Map(),
+  def interp(exp: Exp, env: Env=Map(),
              output: Output=List()): (Output, Int)  =
     exp match {
       case Num (i)        => ???

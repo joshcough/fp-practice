@@ -15,7 +15,7 @@ object PrintCollect {
 
   type Output = List[String]
 
-  def interp(exp: Exp, output: Output=List()): (Output, Int)  =
+  def interp(exp: Exp, output: Output=List()): (Output, Int) =
     exp match {
       case Num (i)   => (output, i)
       case Add (l,r) =>

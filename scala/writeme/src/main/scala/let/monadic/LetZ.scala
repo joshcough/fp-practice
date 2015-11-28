@@ -1,13 +1,18 @@
 package let.monadic
 
-import LetAST._
-
 // With Reader Monad
 object LetZ {
 
   import scalaz._
   import Scalaz._
   import scalaz.Kleisli._
+
+  trait Exp
+    case class Num(i:Int)                       extends Exp
+    case class Add (l:Exp, r:Exp)               extends Exp
+    case class Mult(l:Exp, r:Exp)               extends Exp
+    case class Var (v: String)                  extends Exp
+    case class Let (v: (String, Exp), body:Exp) extends Exp
 
   type Env = Map[String, Int]
 
