@@ -43,9 +43,4 @@ object LetZ {
       z      <- local((env: Env) => env + (x -> eValue))(interp(b))
     } yield z
   }
-
-  def run(node: Exp, expected: Int) = {
-    val i = interp(node)(Map())
-    if(i!=expected) sys.error(s"expected: $expected, but got: $i")
-  }
 }

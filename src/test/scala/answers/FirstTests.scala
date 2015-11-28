@@ -16,4 +16,18 @@ object FirstTests extends Properties("First") {
     property(t._1.toString) = secure { interp(t._1) == t._2 }
     ()
   }
+
+  implicit class Parser(val sc: StringContext) extends AnyVal {
+    def n(args: Any*): Num = Num(sc.parts.mkString.toInt)
+  }
+
+  implicit class RichExp(e:Exp) {
+    def +(e2: Exp) = Add(e, e2)
+    def *(e2: Exp) = Mult(e, e2)
+    def shouldBe(i:Int) = (e,i)
+  }
+
+  implicit class RichInt(i:Int) {
+    def n = Num(i)
+  }
 }

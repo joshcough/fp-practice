@@ -43,5 +43,4 @@ object PrintCollectTests extends Properties("PrintCollect") {
   implicit class RichInt(i:Int) {
     def n = Num(i)
   }
-
 }

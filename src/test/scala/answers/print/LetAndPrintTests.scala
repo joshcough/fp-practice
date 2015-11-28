@@ -30,6 +30,24 @@ object LetAndPrintTests extends Properties("LetAndPrint") {
   // let x = 9 in let y = 8 in let x = 7 in y * x
   test(Let(("x",  9.n), Let(("y",  8.n), Let(("x",  7.n), v"y" * v"x"))) shouldBe (Nil, 56))
 
+  // lets and prints together
+  // let x = 9 in print x
+  test(Let(("x",  9.n), Print(v"x")) shouldBe (List(9), 9))
+  // let x = print 9 in x
+  test(Let(("x",  Print(9.n)), v"x") shouldBe (List(9), 9))
+  // let x = print 9 in print x
+  test(Let(("x",  Print(9.n)), Print(v"x")) shouldBe (List(9,9), 9))
+
+  // let x = print 9 in
+  //   let y = print 8 in
+  //      let x = print 7 in
+  //         print(y * x)
+  test(
+    Let(("x",  Print(9.n)),
+      Let(("y",  Print(8.n)),
+        Let(("x",  Print(7.n)),
+          Print(v"y" * v"x")))) shouldBe (List(9,8,7,56), 56))
+
   def test(t: (Exp,List[Int],Int)): Unit = {
     property(t._1.toString) = secure {
       val exp: Exp = t._1
@@ -54,5 +72,4 @@ object LetAndPrintTests extends Properties("LetAndPrint") {
   implicit class RichInt(i:Int) {
     def n = Num(i)
   }
-
 }
