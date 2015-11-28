@@ -1,10 +1,10 @@
 package answers.print
 
-import answers.print.LetAndPrint._
+import answers.print.LetAndPrintStatementBlocks._
 import org.scalacheck.Prop._
 import org.scalacheck.Properties
 
-object LetAndPrintTests extends Properties("LetAndPrint") {
+object LetAndPrintStatementBlocksTests extends Properties("LetAndPrintStatementBlocksTests") {
 
   // same tests from FirstLang
   test(7.n shouldBe (Nil, 7))
@@ -27,20 +27,36 @@ object LetAndPrintTests extends Properties("LetAndPrint") {
   test("x" -> 9.n in ("y" ->  8.n in ("x" -> 7.n in v"y" * v"x")) shouldBe (Nil, 56))
 
   // lets and prints together
-  test(("x" -> 9.n in print(v"x")) shouldBe (List(9), 9))
-  test(("x" -> print(9.n) in v"x") shouldBe (List(9), 9))
-  test(("x" -> print(9.n) in print(v"x")) shouldBe (List(9,9), 9))
+  test("x" -> 9.n in print(v"x") shouldBe (List(9), 9))
+  test("x" -> print(9.n) in v"x" shouldBe (List(9), 9))
+  test("x" -> print(9.n) in print(v"x") shouldBe (List(9,9), 9))
   test(("x" -> print(9.n) in
-    ("y" -> print(8.n) in
-      ("x" -> print(7.n) in
-        print(v"y" * v"x")))) shouldBe (List(9,8,7,56), 56))
+         ("y" -> print(8.n) in
+           ("x" -> print(7.n) in
+             print(v"y" * v"x")))) shouldBe (List(9,8,7,56), 56))
+
+  // test statements
+  test("x" -> print(9.n) in block(print(v"x")) shouldBe (List(9,9), 9))
+  /*
+    let x = print 0 in
+      print 2
+      print 1
+      print x
+   */
+  test("x" -> print(0.n) in block(
+        print(2.n),
+        print(1.n),
+        print(v"x")) shouldBe (List(0,2,1,0), 0))
+
+  def block(e:Exp*) = Statements(e.toList)
 
   def test(t: (Exp,List[Int],Int)): Unit = {
     property(t._1.toString) = secure {
-      val exp: Exp = t._1
-      val list: List[String] = t._2.map(_.toString)
-      val res: Int = t._3
-      interp(exp) == (list -> res)
+      val expr: Exp = t._1
+      val output: List[String] = t._2.map(_.toString)
+      val expectedRes: Int = t._3
+      val actual = interp(expr)
+      actual == (output -> expectedRes)
     }
     ()
   }

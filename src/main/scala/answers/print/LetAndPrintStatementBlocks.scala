@@ -39,7 +39,7 @@ object LetAndPrintStatementBlocks {
         interp(b, env + (x -> eValue), nextOutput)
       case Print(e)       =>
         val (nextOutput,eValue) = interp(e, env, output)
-        (nextOutput ++ List(eValue.toString), 0)
+        (nextOutput ++ List(eValue.toString), eValue)
       case Statements(es) =>
         es.foldLeft((output,0)){ case ((outacc,_),e) =>
           interp(e, env, outacc)
