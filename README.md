@@ -21,14 +21,14 @@ later on in this project.
 
 Here's the recommended order in which you should implement the languages:
 
-* startHere.FirstLang - Simple arithmetic expressions.
-* let.LetLang         - FirstLang, extended with let expressions.
-* print.PrintStdOut   - FirstLang, extended with print statements/expressions.
-* print.PrintCollect  - Like PrintStdOut, but with a twist.
-* print.LetAndPrint   - Contains let *and* print expressions.
-* print.Statements    - Contains let, print, and statement blocks.
-* functions.HOF       - Contains let and first class functions
-* memory.Memory       - Contains statement blocks and memory, with get and set expressions
+* `startHere.FirstLang` - Simple arithmetic expressions.
+* `let.LetLang`         - FirstLang, extended with let expressions.
+* `print.PrintStdOut`   - FirstLang, extended with print statements/expressions.
+* `print.PrintCollect`  - Like PrintStdOut, but with a twist.
+* `print.LetAndPrint`   - Contains let *and* print expressions.
+* `print.Statements`    - Contains let, print, and statement blocks.
+* `functions.HOF`       - Contains let and first class functions
+* `memory.Memory`       - Contains statement blocks and memory, with get and set expressions
 
 ## FirstLang
 
