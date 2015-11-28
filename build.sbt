@@ -1,31 +1,41 @@
 name := "fp-practice"
 
-version := "0.1"
-
-scalaVersion := "2.11.7"
-
-scalacOptions ++= Seq(
-  "-deprecation",
-  "-encoding", "UTF-8", // yes, this is 2 args
-  "-feature",
-  "-unchecked",
-  "-Xfatal-warnings",
-  "-Xlint",
-  "-Yno-adapted-args",
-  "-Ywarn-dead-code", // N.B. doesn't work well with the ??? hole
-  "-Ywarn-numeric-widen",
-  "-Ywarn-value-discard",
-  "-Xfuture")
-
-libraryDependencies ++= Seq(
-   "org.scalaz"     %% "scalaz-core"   % "7.1.5"
-  ,"org.scalaz"     %% "scalaz-effect" % "7.1.5"
-  ,"org.scalacheck" %% "scalacheck"    % "1.12.5" % "test"
+lazy val fpPractice = Project(
+  id = "fp-practice", base = file("."), aggregate = Seq(answers, writeme)
 )
 
-resolvers += Resolver.sonatypeRepo("releases")
+lazy val answers = Project(id = "answers", base = file("answers"),
+  settings = standardSettings ++ Seq(name := "answers")
+)
 
-addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.7.1")
+lazy val writeme = Project(id = "writeme", base = file("writeme"),
+  settings = standardSettings ++ Seq(name := "writeme")
+)
 
-// if your project uses multiple Scala versions, use this for cross building
-addCompilerPlugin("org.spire-math" % "kind-projector" % "0.7.1" cross CrossVersion.binary)
+lazy val standardSettings: Seq[Def.Setting[_]] = {
+  Seq[Def.Setting[_]](
+     organization := "com.localytics"
+    ,scalaVersion := "2.11.7"
+    ,version      := "0.1"
+    ,addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.7.1")
+    ,crossScalaVersions := Seq("2.10.6", "2.11.7")
+    ,libraryDependencies ++= Seq(
+       "org.scalaz"     %% "scalaz-core"   % "7.1.5"
+      ,"org.scalaz"     %% "scalaz-effect" % "7.1.5"
+      ,"org.scalacheck" %% "scalacheck"    % "1.12.5" % "test"
+    )
+    ,resolvers += Resolver.sonatypeRepo("releases")
+    ,scalacOptions ++= Seq(
+      "-deprecation",
+      "-encoding", "UTF-8", // yes, this is 2 args
+      "-feature",
+      "-unchecked",
+      "-Xfatal-warnings",
+      "-Xlint",
+      "-Yno-adapted-args",
+      "-Ywarn-dead-code", // N.B. doesn't work well with the ??? hole
+      "-Ywarn-numeric-widen",
+      "-Ywarn-value-discard",
+      "-Xfuture")
+  )
+}

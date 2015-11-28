@@ -1,9 +1,18 @@
 # FP Practice!!
 
-This repo has a bunch of programming languages that need implementations for.
+This repo is designed to help you learn functional programming
+by studying and implementing programming languages.
 
-Each of the languages has a shell implementation with simple `???` that you
-need to fill in.
+Contained in the `writeme/src/main` directory are several programming
+languages that need implementations. Each of the languages has a shell 
+implementation with simple `???`s that you need to fill in.
+
+Once you've written the interpreter for a language, you can test it
+like this:
+
+    sbt
+    project writeme
+    testOnly startHere.FirstTests
 
 The use of the term 'programming language' is used very loosely here, 
 since most of the so called languages here are *not* programming languages.
@@ -12,14 +21,14 @@ later on in this project.
 
 Here's the recommended order in which you should implement the languages:
 
-* FirstLang          - A simple arithmetic language
-* let.Let            - First, extended with let statements
-* print.PrintStdOut  - First, extended with print statements
-* print.PrintCollect - Like PrintStdOut, but with a twist
-* print.LetAndPrint  - Contains both Let and Print
-* print.Statements   - Contains Let, Print, and statement blocks.
-* functions.HOF      - Let, and first class functions
-* memory.Memory      - Let, statement blocks and memory, with get and set expressions
+* startHere.FirstLang - Simple arithmetic expressions.
+* let.LetLang         - FirstLang, extended with let expressions.
+* print.PrintStdOut   - FirstLang, extended with print statements/expressions.
+* print.PrintCollect  - Like PrintStdOut, but with a twist.
+* print.LetAndPrint   - Contains let *and* print expressions.
+* print.Statements    - Contains let, print, and statement blocks.
+* functions.HOF       - Contains let and first class functions
+* memory.Memory       - Contains statement blocks and memory, with get and set expressions
 
 ## FirstLang
 
@@ -97,7 +106,7 @@ For example, the following program is invalid, because both x and y are unbound.
 
 * `(+ x y) ==> Error: unbound variable.`
 
-## LetAndPrintLang
+## LetAndPrint
 
 LetAndPrintLang is LetLang with print statements, and statement blocks.
 
