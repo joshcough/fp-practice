@@ -27,8 +27,8 @@ Here's the recommended order in which you should implement the languages:
 * `print.PrintCollect`    - Like PrintStdOut, but with a twist.
 * `print.LetAndPrint`     - Contains let *and* print expressions.
 * `print.StatementBlocks` - Contains let, print, and statement blocks.
-* `functions.HOF`         - Contains let and first class functions
-* `memory.Memory`         - Contains statement blocks and memory, with get and set expressions
+* `functions.Functions`   - Contains let and first class functions.
+* `memory.Memory`         - Contains statement blocks, and memory, with get and set expressions.
 
 However, each language is completely self-contained, so you could 
 pick any of the languages to implement first. This is especially true
@@ -41,6 +41,9 @@ if you are experienced and want to move right to more advanced languages.
 In FirstLang you'll learn what an AST (abstract syntax tree) is,
 and write your first interpreter. Otherwise, FirstLang is wholly
 uninteresting - it exists simply to help get you started.
+
+Concepts learned include __data types, recursion, interpreters,
+abstract syntax trees__.
 
 * `let.LetLang` - FirstLang, extended with let expressions.
 
@@ -63,6 +66,8 @@ to remove this annoying plumbing, and that will introduce us to
 the __Reader Monad__. We'll see how the reader monad can be used as
 a wholesale replacement for Dependency Injection.
 
+Concepts learned: __scope, type aliases, substitution__.
+
 * `print.PrintStdOut` - FirstLang, extended with print statements/expressions.
 
 PrintStdOut an extension of FirstLang (not LetLang) has print 
@@ -71,6 +76,8 @@ This introduces us to the concept of IO (really, just the O half of IO)
 and how and why that can be difficult to test. It also helps us start a
 discussion about __referential transparency__ and what that means.
 PrintStdOut print statements are not _referential transparent__.
+
+Concepts learned: __referential transparency, side effects, IO__.
 
 * `print.PrintCollect` - Like PrintStdOut, but with a twist.
 
@@ -88,6 +95,8 @@ Later we will refactor PrintCollect to remove this annoying plumbing,
 and that will introduce us to the __Writer Monad__. The writer monad 
 can be used as a testable replacement for logging, without the plumbing.
 
+Concepts learned: __referential transparency, side effects, IO__.
+
 * `print.LetAndPrint` - Contains let *and* print expressions.
 
 LetAndPrint brings together the LetLang and PrintCollect languages.
@@ -99,12 +108,26 @@ Later on, this will lead us into a discussion about __Monad Transformers__,
 and how they can be used to dramatically reduce unnecessary code in
 your programs, while requiring minimal changes.
 
+Concepts learned: no new concepts, reinforcement of previously learned 
+concepts, and a possibly a discussion about some concepts we'll teach later.
+
 * `print.StatementBlocks` - Contains let, print, and statement blocks.
 
-StatementBlocks introduces (quite obviously) statement blocks. This
-will introduce us to the concept of __fold__.
+StatementBlocks introduces (quite obviously) statement blocks, which
+get added onto LetAndPrint. We'll have an interesting discussion 
+about what statement blocks mean, and the difference between a 
+statement and an expression. We'll also be introduced us to the 
+concept of __fold__.
 
-* `functions.HOF`       - Contains let and first class functions
+* `functions.Functions` - Contains let and first class functions
+
+Functions is LetLang with __functions__ and __higher order functions__ added.
+This will help us understand what a function really _is_. We'll discover
+that let bindings are really just functions and function application
+in disguise. 
+
+Concepts learned: functions, higher order functions.
+
 * `memory.Memory`
 
 ## In Depth Language Docs

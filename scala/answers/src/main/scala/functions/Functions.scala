@@ -2,7 +2,10 @@ package functions
 
 object Functions {
 
-  trait Exp
+  trait Exp {
+    def apply(e:Exp) = Apply(this, e)
+    def apply(i:Int) = Apply(this, Num(i))
+  }
     case class Num(i:Int)                        extends Exp
     case class Add (l:Exp, r:Exp)                extends Exp
     case class Mult(l:Exp, r:Exp)                extends Exp
@@ -40,42 +43,8 @@ object Functions {
   }
 
   def math(l:RuntimeValue, r:RuntimeValue)
-                  (f: (Int, Int) => Int) = (l,r) match {
+          (f: (Int, Int) => Int): RuntimeValue = (l,r) match {
     case (NumV(lv), (NumV(rv))) => NumV(f(lv,rv))
     case bad => sys.error(s"can't add: $bad")
-  }
-
-  def run(exp: Exp, expected: RuntimeValue) = {
-    val i = interp(exp)
-    if(i!=expected) sys.error(s"expected: $expected, but got: $i")
-    else println(i)
-  }
-
-  def main (args: Array[String]): Unit = {
-    run(
-      Apply(
-        Function("x", Add(n"7", v"x")),
-        Num(5)
-      ),
-      NumV(12)
-    )
-    // ((def (x) ((def (x) (+ x x)) x)) 5)
-    run(
-      Apply(
-        Function("x", Add(v"x", Apply(
-          Function("x", Add(v"x", v"x")),
-          v"x"
-        ))),
-        Num(5)
-      ),
-      NumV(15)
-    )
-    // (\x -> \y -> \x -> x) 6 7 8
-    run(
-      Apply(Apply(Apply(
-        Function("x", Function("y", Function("x", v"x")))
-      , n"6"), n"7"), n"8"),
-      NumV(8)
-    )
   }
 }
