@@ -21,20 +21,95 @@ later on in this project.
 
 Here's the recommended order in which you should implement the languages:
 
-* `startHere.FirstLang` - Simple arithmetic expressions.
-* `let.LetLang`         - FirstLang, extended with let expressions.
-* `print.PrintStdOut`   - FirstLang, extended with print statements/expressions.
-* `print.PrintCollect`  - Like PrintStdOut, but with a twist.
-* `print.LetAndPrint`   - Contains let *and* print expressions.
-* `print.Statements`    - Contains let, print, and statement blocks.
-* `functions.HOF`       - Contains let and first class functions
-* `memory.Memory`       - Contains statement blocks and memory, with get and set expressions
+* `startHere.FirstLang`   - Simple arithmetic expressions.
+* `let.LetLang`           - FirstLang, extended with let expressions.
+* `print.PrintStdOut`     - FirstLang, extended with print statements/expressions.
+* `print.PrintCollect`    - Like PrintStdOut, but with a twist.
+* `print.LetAndPrint`     - Contains let *and* print expressions.
+* `print.StatementBlocks` - Contains let, print, and statement blocks.
+* `functions.HOF`         - Contains let and first class functions
+* `memory.Memory`         - Contains statement blocks and memory, with get and set expressions
 
 However, each language is completely self-contained, so you could 
 pick any of the languages to implement first. This is especially true
 if you are experienced and want to move right to more advanced languages.
 
-## FirstLang
+## Simple language summaries
+
+* `startHere.FirstLang` - Simple arithmetic expressions.
+
+In FirstLang you'll learn what an AST (abstract syntax tree) is,
+and write your first interpreter. Otherwise, FirstLang is wholly
+uninteresting - it exists simply to help get you started.
+
+* `let.LetLang` - FirstLang, extended with let expressions.
+
+LetLang is an extension of FirstLang that introduces you to
+__let expressions__ (aka let bindings or variable bindings).
+This helps you understand the concepts of __variable scope__ and 
+__substitution__ in programming languages and why they are important 
+(and can be tricky to get right).
+
+Our initial LetLang interpreter implementation will have a fatal flaw -
+ it will throw errors upon finding an unbound variable name. For 
+example: `let x = 6 in x + y` is an invalid program because `y` is
+__unbound__. The interpreter will throw an error `"unbound variable: y"`.
+We will fix this later in the Error Handling section where we will
+learn about several important FP data types, and eventually Monads.
+
+A correct implementation of LetLang requires plumbing an environment
+around, and it can be a little annoying. Later we will refactor LetLang
+to remove this annoying plumbing, and that will introduce us to
+the __Reader Monad__. We'll see how the reader monad can be used as
+a wholesale replacement for Dependency Injection.
+
+* `print.PrintStdOut` - FirstLang, extended with print statements/expressions.
+
+PrintStdOut an extension of FirstLang (not LetLang) has print 
+statements that, when evaluated, print their value to std out.
+This introduces us to the concept of IO (really, just the O half of IO) 
+and how and why that can be difficult to test. It also helps us start a
+discussion about __referential transparency__ and what that means.
+PrintStdOut print statements are not _referential transparent__.
+
+* `print.PrintCollect` - Like PrintStdOut, but with a twist.
+
+PrintCollect is a revision (or refactoring) of PrintStdOut that
+instead of printing to std out when evaluating a print statement,
+collects the output of all the print statements in a list, and
+returns them all (in the correct order) at the end of execution.
+This makes the language much easier to test, and furthers our 
+discussion of __referential transparency__. PrintCollect print 
+statements are not __referential transparent__.
+
+Like LetLang, a correct implementation of PrintCollect requires
+plumbing an output list around, and it can be a very annoying. 
+Later we will refactor PrintCollect to remove this annoying plumbing,
+and that will introduce us to the __Writer Monad__. The writer monad 
+can be used as a testable replacement for logging, without the plumbing.
+
+* `print.LetAndPrint` - Contains let *and* print expressions.
+
+LetAndPrint brings together the LetLang and PrintCollect languages.
+This doesn't actually introduce us to any new concepts, but it
+is worth the effort of combining these two together. You will feel
+the pain of having to plumb two different types of environments around.
+
+Later on, this will lead us into a discussion about __Monad Transformers__,
+and how they can be used to dramatically reduce unnecessary code in
+your programs, while requiring minimal changes.
+
+* `print.StatementBlocks` - Contains let, print, and statement blocks.
+
+StatementBlocks introduces (quite obviously) statement blocks. This
+will introduce us to the concept of __fold__.
+
+* `functions.HOF`       - Contains let and first class functions
+* `memory.Memory`
+
+## In Depth Language Docs
+
+### FirstLang
 
 FirstLang is the simplest language you will ever write.
 It supports numbers, addition, and multiplication. That's it.
@@ -63,7 +138,7 @@ For example:
 * `(* (+ 3 8) (* 2 7)) ==> 99` is the same as `(* (+ 3 8) (* 2 7)) evaluates to 99`.
 * `7 ==> 7` is the same as `7 evaluates to 7`.
 
-## LetLang
+### LetLang
 
 This is ArithLang with let statements. All ArithLang expressions
 are valid in LetLang, and it includes two additional expressions -
@@ -110,7 +185,7 @@ For example, the following program is invalid, because both x and y are unbound.
 
 * `(+ x y) ==> Error: unbound variable.`
 
-## LetAndPrint
+### LetAndPrint
 
 LetAndPrintLang is LetLang with print statements, and statement blocks.
 
@@ -143,7 +218,7 @@ values that were printed in the program, *and* a value.
 * `((+ 1 (print 9)) (print 2) (print 3)) ==> ((9,2,3), 3)`
 * `(+ (print 1) (print 9)) ==> ((1,9), 10)`
 
-## MemoryLang
+### MemoryLang
 
 Coming soon.
 

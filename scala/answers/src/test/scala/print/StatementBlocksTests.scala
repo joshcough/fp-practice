@@ -1,10 +1,10 @@
 package print
 
-import LetAndPrintStatementBlocks._
+import StatementBlocks._
 import org.scalacheck.Prop._
 import org.scalacheck.Properties
 
-object LetAndPrintStatementBlocksTests extends Properties("LetAndPrintStatementBlocksTests") {
+object StatementBlocksTests extends Properties("LetAndPrintStatementBlocksTests") {
 
   // tests from FirstLang
   test(7.n mustBe (Nil, 7))

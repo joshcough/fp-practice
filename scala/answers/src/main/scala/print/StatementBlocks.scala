@@ -1,6 +1,6 @@
 package print
 
-object LetAndPrintStatementBlocks {
+object StatementBlocks {
 
   trait Exp
     case class Num  (i:Int)                      extends Exp
