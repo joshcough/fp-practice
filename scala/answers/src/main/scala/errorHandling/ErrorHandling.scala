@@ -1,12 +1,18 @@
 package errorHandling
 
-import let.monadic.LetAST
-import LetAST._
-
 /**
   * Created by jcough on 11/27/15.
   */
 object ErrorHandling {
+
+  trait Exp
+    case class Num(i:Int)                       extends Exp
+    case class Add (l:Exp, r:Exp)               extends Exp
+    case class Mult(l:Exp, r:Exp)               extends Exp
+    case class Var (v: String)                  extends Exp
+    case class Let (v: (String, Exp), body:Exp) extends Exp
+
+  type Env = Map[String, Int]
 
   object LetLangOption {
 

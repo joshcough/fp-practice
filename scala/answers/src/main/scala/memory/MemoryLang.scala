@@ -1,5 +1,29 @@
 package memory
 
+/**
+  * As the name implies, MemoryLang has memory.
+  * More accurately, it has a magical heap that stores
+  * integer values at integer addresses.
+  *
+  * Similar to PrintSdtOut (using side-effects on print calls),
+  * we could use a mutable map to store these values, and then
+  * refactor the program to use an immutable map so that we can
+  * see the benefits of pure functions with testing. But, we
+  * already did that, so we are just going to skip that part.
+  *
+  * Here, you are asked to implement an extension of LetLang that adds:
+  *  - set: set an address in memory to a value
+  *  - get: get the value at a particular address in memory
+  *  - statement blocks: execute n expressions linearly.
+  *
+  * The semantics of set and statement blocks are up to you.
+  * For example, the statement { mem(0) = 100 } could return
+  * several possible values:
+  *  - the old value at that address
+  *  - the new value to put into that address
+  *  - the address
+  *  - 0, -1, some other int value.
+  */
 object MemoryLang {
 
   trait Exp
@@ -8,8 +32,8 @@ object MemoryLang {
     case class Mult(l:Exp, r:Exp)               extends Exp
     case class Var (v: String)                  extends Exp
     case class Let (v: (String, Exp), body:Exp) extends Exp
-    case class SetMem(address: Int, e: Exp)     extends Exp
-    case class GetMem(address: Int)             extends Exp
+    case class SetMem(address: Exp, e: Exp)     extends Exp
+    case class GetMem(address: Exp)             extends Exp
     case class Statements(es:List[Exp])         extends Exp
 
   type Env = Map[String, Int]
@@ -26,8 +50,7 @@ object MemoryLang {
   def readMem(addr: Int, mem: Mem, env: Env): Int =
     mem.getOrElse(addr, sys.error(s"null pointer: $addr, env: $env"))
 
-  def interp(exp: Exp,
-             env: Env=Map(),
+  def interp(exp: Exp, env: Env=Map(),
              mem: Mem=Map()): (Int,Mem) = exp match {
     case Num (i)   => (i,mem)
     case Add (l,r) =>
@@ -42,12 +65,16 @@ object MemoryLang {
     case Let ((x,e),b) =>
       val (eValue,memx) = interp(e, env, mem)
       interp(b, env + (x -> eValue), memx)
-    case SetMem(address:Int, e:Exp) =>
-      val (eValue,memx) = interp(e, env, mem)
+    case SetMem(address: Exp, e:Exp) =>
+      val (addrValue,memA) = interp(address, env, mem)
+      val (eValue,memE) = interp(e, env, memA)
       // we can return any value here...
-      (0, memx + (address -> eValue))
-    case GetMem(addr:Int) => (readMem(addr, mem, env), mem)
-    case Statements(es)   =>
+      // i chose to have set return 0 always.
+      (0, memE + (addrValue -> eValue))
+    case GetMem(address: Exp) =>
+      val (addrValue,memA) = interp(address, env, mem)
+      (readMem(addrValue, mem, env), memA)
+    case Statements(es)    =>
       es.foldLeft((0,mem)){ case ((_,memacc),e) =>
         interp(e, env, memacc)
       }
@@ -91,8 +118,7 @@ object MemoryLangZ {
   def readMem(addr: Int, mem: Mem, env: Env): Int =
     mem.getOrElse(addr, sys.error(s"null pointer: $addr, env: $env"))
 
-  def interp(exp: Exp,
-             env: Env=Map()): MemState[Int] = exp match {
+  def interp(exp: Exp, env: Env=Map()): MemState[Int] = exp match {
     case Num (i)   => i.point[MemState]
     case Add (l,r) => for {
       il <- interp(l, env)
