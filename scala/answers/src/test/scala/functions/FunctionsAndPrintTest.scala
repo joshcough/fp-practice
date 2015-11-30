@@ -30,6 +30,8 @@ object FunctionsAndPrintTest extends Properties("FunctionsTest") {
   test((x \-> (x.v + doubler(x.v)))(5) mustBe (Nil, 15))
   test((x \-> (y \-> id))(6)(7)(8) mustBe (Nil, 8))
 
+  // TODO: tests for functions and printing.
+
   // tests from FirstLang
   test(7.n mustBe (Nil, 7))
   test(5.n + 6.n mustBe (Nil, 11))
