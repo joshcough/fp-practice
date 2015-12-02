@@ -2,20 +2,56 @@ package everything
 
 import everything.Everything._
 import org.scalacheck.Prop._
-import org.scalacheck.Properties
+import org.scalacheck.{Prop, Properties}
 
 /**
   * Created by jcough on 11/29/15.
   */
 object EverythingTest extends Properties("EverythingTest") {
 
-  val (x,y)   = ("x", "y")
+  // helper variables we'll use a bunch here
+  val (x,y,vx,vy) = ("x","y",v"x",v"y")
   val id      = x \-> x.v
   val const   = x \-> (y \-> x.v)
   val adder   = x \-> (y \-> (x.v + y.v))
   val multer  = x \-> (y \-> (x.v * y.v))
   val sqrer   = x \-> (x.v * x.v)
   val doubler = x \-> (x.v + x.v)
+
+  // Memory tests!
+  test((mem(0) := 10.n) mustBe (List(), Map(0 -> 10.v), 0))
+  test(block(mem(0) := 10.n) mustBe (List(), Map(0 -> 10.v), 0))
+
+  test(block(
+    mem(0) := 5.n,
+    mem(1) := 6.n,
+    mem(0) + mem(1)
+  ) mustBe (List(), Map(0 -> 5.v, 1 -> 6.v), 11))
+
+  // forall a,v: { mem(a) := v; mem(a) } = v
+  test("set then get")(forAll {
+    (addr: Int, value: Int) => block(
+      mem(addr) := value.n, mem(addr)
+    ) mustBe (List(), Map(addr -> value.v), value)
+  })
+
+  // pointers!
+  // forall a1,a2,v: {mem(a1) := a2; mem(a2) := v; mem(mem(a1))} = v
+  test("pointers")(
+    forAll { (a1: Int, a2: Int, value: Int) => a1 != a2 ==> {
+      block(
+        mem(a1) := a2.n, mem(a2) := value.n, mem(mem(a1))
+      ) mustBe (List(), Map(a1 -> a2.v, a2 -> value.v), value)
+    }}
+  )
+
+  test("consecutive sets")(
+    forAll { (a: Int, v1: Int, v2: Int) => v1 != v2 ==> {
+      block(
+        mem(a) := v1.n, mem(a) := v2.n, mem(a)
+      ) mustBe (List(), Map(a -> v2.v), v2)
+    }}
+  )
 
   // function tests
   test(id(5)         mustBe 5)
@@ -61,15 +97,25 @@ object EverythingTest extends Properties("EverythingTest") {
       ("x" -> print(7.n) in
         print(v"y" * v"x")))) mustBe (List(9,8,7,56), Map(), 56))
 
-  def test(t: (Exp,Output,Mem,RuntimeValue)): Unit = {
-    property(t._1.toString) = secure {
-      interp(t._1, Map(), List(), Map()) == ((t._4,t._2,t._3))
-    }
+  def test(name:String)(f: => Prop): Unit = {
+    property(name) = secure { f }
     ()
+  }
+
+  implicit def tProp(t: (Exp,Output,Mem,RuntimeValue)): Prop = testBody(t)
+
+  def testBody(t: (Exp,Output,Mem,RuntimeValue)): Prop =
+    secure {
+      interp(t._1, State(Map(), List(), Map())) == ((t._4,t._2,t._3))
+    }
+
+  def test(t: (Exp,Output,Mem,RuntimeValue)): Unit = {
+    test(t._1.toString)(testBody(t))
   }
 
   implicit class RichInt(i:Int) {
     def n: Exp = Num(i)
+    def v: RuntimeValue = NumV(i)
   }
 
   implicit class RichString(s:String) {
@@ -99,4 +145,13 @@ object EverythingTest extends Properties("EverythingTest") {
   implicit class RichWhat(t: (String, Exp)) {
     def in(e:Exp) = Let(t,e)
   }
+
+  implicit class RichGetMem(e:GetMem) {
+    def := (exp:Exp) = SetMem(e.address,exp)
+  }
+
+  def block(e:Exp*) = Statements(e.toList)
+
+  def mem(i: Int): GetMem = GetMem(i.n)
+  def mem(e: Exp): GetMem = GetMem(e)
 }

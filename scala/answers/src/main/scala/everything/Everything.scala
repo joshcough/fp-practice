@@ -30,64 +30,63 @@ object Everything {
   type Output = List[String]
   type Mem    = Map[Int,RuntimeValue]
 
-  def lookup(v: String, env: Env, output: Output, mem: Mem): RuntimeValue =
-    env.getOrElse(v, sys.error(
-      s"unbound variable, env: $env, mem: $mem, output: ${output.mkString("\n")}"
-    ))
+  def lookup(v: String, state:State): RuntimeValue =
+    state.env.getOrElse(v, sys.error(s"unbound variable, $v in $state"))
 
   def readMem(addr: Int, env: Env, output: Output, mem: Mem): RuntimeValue =
     mem.getOrElse(addr, sys.error(s"null pointer: $addr, env: $env"))
 
   type V = RuntimeValue
+  case class State(env: Env, out: Output, mem: Mem)
 
-  def interp(exp: Exp, env: Env, out: Output, mem: Mem): (V,Output,Mem) =
+  def interp(exp: Exp, state: State): (V,Output,Mem) =
     exp match {
-      case Num (i)       => (NumV(i),out,mem)
+      case Num (i)       => (NumV(i),state.out,state.mem)
       case Add (l,r)     =>
-        val (lv,lo,mo1) = interp(l,env,out,mem)
-        val (rv,ro,mo2) = interp(r,env,lo,mo1)
+        val (lv,lo,mo1) = interp(l,state)
+        val (rv,ro,mo2) = interp(r,State(state.env,lo,mo1))
         (math(lv,rv)(_+_),ro,mo2)
       case Mult (l,r)    =>
-        val (lv,lo,mo1) = interp(l,env,out,mem)
-        val (rv,ro,mo2) = interp(r,env,lo,mo1)
+        val (lv,lo,mo1) = interp(l,state)
+        val (rv,ro,mo2) = interp(r,State(state.env,lo,mo1))
         (math(lv,rv)(_*_),ro,mo2)
-      case Var (x)       => (lookup(x, env, out, mem), out, mem)
+      case Var (x)       => (lookup(x, state), state.out, state.mem)
       case Let ((x,e),b) =>
-        val (eValue,o1,m1) = interp(e, env, out, mem)
-        interp(b, env + (x -> eValue), o1, m1)
+        val (eValue,o1,m1) = interp(e, state)
+        interp(b, State(state.env + (x -> eValue), o1, m1))
       case Print(e)      =>
-        val (eValue,o1,m1) = interp(e, env, out, mem)
+        val (eValue,o1,m1) = interp(e, state)
         val newString = eValue match {
           case NumV(i) => i.toString
           case Closure(_, _) => "<function>"
         }
         (eValue, o1 ++ List(newString), m1)
-      case Apply(fexp, a) => interp(fexp, env, out, mem) match {
+      case Apply(fexp, a) => interp(fexp, state) match {
         case (Closure(func,cEnv),o1,m1) =>
-          val (arg,o2,m2) = interp(a, env, o1, m1)
-          interp(func.body, cEnv + (func.arg -> arg), o2, m2)
+          val (arg,o2,m2) = interp(a, State(state.env, o1, m1))
+          interp(func.body, State(cEnv + (func.arg -> arg), o2, m2))
         // TODO: write generic error printing thing
-        case (NumV(i),o1,m1) => sys.error(s"$i is not a function. Output: $o1, mem: $mem")
+        case (NumV(i),o1,m1) => sys.error(s"$i is not a function. State: $state")
       }
-      case f:Function => (Closure(f, env), out, mem)
+      case f:Function => (Closure(f, state.env), state.out, state.mem)
       case SetMem(address: Exp, e:Exp) =>
-        val (addrValue,o1,m1) = interp(address, env, out, mem)
-        val (eValue,o2,m2) = interp(e, env, o1, m1)
+        val (addrValue,o1,m1) = interp(address, state)
+        val (eValue,o2,m2) = interp(e, State(state.env, o1, m1))
         // we can return any value here...
         // i chose to have set return 0 always.
         addrValue match {
-          case NumV(addr) =>  (NumV(0), out, m2 + (addr -> eValue))
-          case c => sys.error(s"invalid memory address: $c. Output: $o1, mem: $mem")
+          case NumV(addr) =>  (NumV(0), state.out, m2 + (addr -> eValue))
+          case c => sys.error(s"invalid memory address: $c. State: $state")
         }
       case GetMem(address: Exp) =>
-        val (addrValue,o1,m1) = interp(address, env, out, mem)
+        val (addrValue,o1,m1) = interp(address, state)
         addrValue match {
-          case NumV(addr) =>  (readMem(addr, env, o1, m1), o1, m1)
-          case c => sys.error(s"invalid memory address: $c. Output: $o1, mem: $mem")
+          case NumV(addr) =>  (readMem(addr, state.env, o1, m1), o1, m1)
+          case c => sys.error(s"invalid memory address: $c. State: $state")
         }
       case Statements(es)    =>
-        es.foldLeft((NumV(0):RuntimeValue,out,mem)){
-          case ((_,outacc, memacc),e) => interp(e, env, outacc, memacc)
+        es.foldLeft((NumV(0):RuntimeValue,state.out,state.mem)){
+          case ((_,outacc, memacc),e) => interp(e, State(state.env, outacc, memacc))
         }
     }
 
