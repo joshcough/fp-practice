@@ -44,7 +44,7 @@ object PrintZLang {
       case Print(e)       => for {
         ev <- interp(e, env)
         _  <- 0.set(List(ev.toString))
-      } yield 0
+      } yield ev
       case Statements(es) => es.foldlM(0)(_ => e => interp(e, env))
     }
 

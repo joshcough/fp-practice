@@ -33,7 +33,6 @@ lazy val standardSettings: Seq[Def.Setting[_]] = {
       "-Xfatal-warnings",
       "-Xlint",
       "-Yno-adapted-args",
-      "-Ywarn-dead-code", // N.B. doesn't work well with the ??? hole
       "-Ywarn-numeric-widen",
       "-Ywarn-value-discard",
       "-Xfuture")

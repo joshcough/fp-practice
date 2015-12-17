@@ -3,11 +3,23 @@ package everything
 import everything.Everything._
 import org.scalacheck.Prop._
 import org.scalacheck.{Prop, Properties}
+import scala.language.implicitConversions
+import scalaz.\/
+import scalaz.syntax.either._
+
+object EverythingNaiveInterpreterTest
+  extends EverythingTest(EverythingNaiveInterpreter)
+
+object EverythingZInterpreterTest
+  extends EverythingTest(EverythingZInterpreter)
 
 /**
   * Created by jcough on 11/29/15.
   */
-object EverythingTest extends Properties("EverythingTest") {
+abstract class EverythingTest(i: Everything.Interpreter)
+  extends Properties(i.getClass.getName) with Helpers {
+
+  implicit val interpreter = i
 
   // helper variables we'll use a bunch here
   val (x,y,vx,vy) = ("x","y",v"x",v"y")
@@ -97,20 +109,13 @@ object EverythingTest extends Properties("EverythingTest") {
       ("x" -> print(7.n) in
         print(v"y" * v"x")))) mustBe (List(9,8,7,56), Map(), 56))
 
+}
+
+trait Helpers { self: Properties =>
+
   def test(name:String)(f: => Prop): Unit = {
     property(name) = secure { f }
     ()
-  }
-
-  implicit def tProp(t: (Exp,Output,Mem,RuntimeValue)): Prop = testBody(t)
-
-  def testBody(t: (Exp,Output,Mem,RuntimeValue)): Prop =
-    secure {
-      interp(t._1, State(Map(), List(), Map())) == ((t._4,t._2,t._3))
-    }
-
-  def test(t: (Exp,Output,Mem,RuntimeValue)): Unit = {
-    test(t._1.toString)(testBody(t))
   }
 
   implicit class RichInt(i:Int) {
@@ -118,17 +123,27 @@ object EverythingTest extends Properties("EverythingTest") {
     def v: RuntimeValue = NumV(i)
   }
 
+  def test(t: (Exp,Output,Mem,RuntimeValue))
+          (implicit i: Everything.Interpreter): Unit = {
+    test(t._1.toString)(testBody(t))
+  }
+
+  def testBody(t: (Exp,Output,Mem,RuntimeValue))
+              (implicit i: Everything.Interpreter): Prop =
+    secure {
+      val v: (String \/ RuntimeValue, PState) = i.interpret(t._1)
+      v == (t._4.right -> PState(Map(), t._2, t._3))
+    }
+
+  implicit def tProp(t: (Exp,Output,Mem,RuntimeValue))
+                    (implicit i: Everything.Interpreter): Prop = testBody(t)
+
   implicit class RichString(s:String) {
     def fun(exp: Exp): Exp = Function(s, exp)
     def v: Exp = Var(s)
     def \->(e:Exp) = Function(s, e)
     def +(e2: Exp) = Add(Var(s), e2)
     def *(e2: Exp) = Mult(Var(s), e2)
-  }
-
-  implicit class Parser(val sc: StringContext) extends AnyVal {
-    def v(args: Any*): Var = Var(sc.parts.mkString)
-    def n(args: Any*): Num = Num(sc.parts.mkString.toInt)
   }
 
   implicit class RichExp(e:Exp) {
