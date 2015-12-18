@@ -47,9 +47,4 @@ object PrintZLang {
       } yield ev
       case Statements(es) => es.foldlM(0)(_ => e => interp(e, env))
     }
-
-  def run(exp: Exp, expected: Int) = {
-    val (out,i) = interp(exp).run
-    if(i!=expected) sys.error(s"expected: $expected, but got: $i")
-  }
 }

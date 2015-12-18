@@ -1,6 +1,6 @@
 package everything
 
-import scalaz.{\/, Show}
+import scalaz.{Equal, \/, Show}
 
 object Everything {
 
@@ -34,17 +34,19 @@ object Everything {
   type Output = List[String]
   type Mem    = Map[Int,RuntimeValue]
 
-  // stands for ProgramState, but thats too long.
-  case class PState(env: Env = Map(), out: Output = List(), mem: Mem = Map())
+  case class ProgramState(env: Env = Map(), out: Output = List(), mem: Mem = Map())
 
   trait Interpreter {
-    def interpret(exp: Exp): (String \/ RuntimeValue, PState)
+    def interpret(exp: Exp): (String \/ RuntimeValue, ProgramState)
   }
 
   implicit lazy val ShowRV: Show[RuntimeValue] = Show.show {
     case NumV(i) => i.toString
     case Closure(_, _) => "<function>"
   }
+
+  implicit lazy val EqualRV: Equal[RuntimeValue] = Equal.equalA
+  implicit lazy val EqualPState: Equal[ProgramState] = Equal.equalA
 
   implicit class Parser(val sc: StringContext) extends AnyVal {
     def v(args: Any*): Var = Var(sc.parts.mkString)
