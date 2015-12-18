@@ -36,7 +36,7 @@ object EverythingZInterpreter extends Interpreter {
       case Apply(fexp, a) => for {
         c   <- interpClosure(fexp)
         v   <- interp(a)
-        res <- localE(env => env + (c.f.arg -> v))(interp(c.f.body))
+        res <- localE(_ => c.env + (c.f.arg -> v))(interp(c.f.body))
       } yield res
       case f:Function     => lift(get[ProgramState].map(p => closure(f, p.env)))
       case SetMem(address, e) => for {
@@ -57,28 +57,29 @@ object EverythingZInterpreter extends Interpreter {
   def lift[A](s:S[A]): E[A] = liftV(s.map(_.right))
 
   def usingState[A](lens: ProgramState => Option[RuntimeValue],
-                    failure: String): E[RuntimeValue] =
+                    failure: ProgramState => String): E[RuntimeValue] =
     liftV(get[ProgramState].map(s =>
-      lens(s) match { case Some(r) => r.right; case _ => failure.left }
+      lens(s) match { case Some(r) => r.right; case _ => failure(s).left }
     ))
 
   def localE[A](f: Env => Env)(action: E[RuntimeValue]): E[RuntimeValue] =
     liftV(localS(f)(action.run))
 
-  def localS[A](f: Env => Env)
-               (action: S[String \/ RuntimeValue]): S[String \/ RuntimeValue] =
+  def localS[A](f: Env => Env)(action: => S[A]): S[A] =
     for {
       old <- get[ProgramState]
+      xxx = old.copy(env = f(old.env))
+      yyy = println(xxx)
       _   <- put[ProgramState](old.copy(env = f(old.env)))
       res <- action
-      _   <- modify[ProgramState](ps => ps.copy(env = old.env))
+      _   <- modify[ProgramState](_.copy(env = old.env))
     } yield res
 
   def lookup(v: String): E[RuntimeValue] =
-    usingState(_.env.get(v), s"unbound variable, $v")
+    usingState(_.env.get(v), s => s"unbound variable: $v in $s")
 
   def readMem(addr: Int): E[RuntimeValue] =
-    usingState(_.mem.get(addr), s"null pointer: $addr")
+    usingState(_.mem.get(addr), s => s"null pointer: $addr in $s")
 
   def mod(f: ProgramState => ProgramState): E[Unit] =
     lift(modify[ProgramState](f))
