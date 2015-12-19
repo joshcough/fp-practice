@@ -1,6 +1,7 @@
 package everything
 
 import Everything._
+import scala.language.higherKinds
 import scalaz.syntax.either._
 import scalaz.syntax.monad._
 import scalaz.State
@@ -68,8 +69,6 @@ object EverythingZInterpreter extends Interpreter {
   def localS[A](f: Env => Env)(action: => S[A]): S[A] =
     for {
       old <- get[ProgramState]
-      xxx = old.copy(env = f(old.env))
-      yyy = println(xxx)
       _   <- put[ProgramState](old.copy(env = f(old.env)))
       res <- action
       _   <- modify[ProgramState](_.copy(env = old.env))

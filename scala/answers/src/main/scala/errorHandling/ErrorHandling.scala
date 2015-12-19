@@ -162,7 +162,6 @@ object ErrorHandling {
 
     import scala.language.higherKinds
     import scalaz.MonadError
-    import scalaz.MonadListen
     import scalaz.syntax.monad._
     import scalaz.syntax.monadError._
 
