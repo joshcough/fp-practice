@@ -2,7 +2,7 @@ package letAndPrint
 
 import LetAndPrint._
 
-import scalaz.{Kleisli, Reader, ReaderT, Writer, WriterT}
+import scalaz.{Reader, WriterT}
 import scalaz.WriterT._
 import scalaz.Kleisli.{ask, local}
 import scalaz.Id.Id
