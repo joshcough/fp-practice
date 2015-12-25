@@ -2,3 +2,5 @@ target/*
 project/target/*
 .idea
 target
+haskell/.stack
+haskell/.stack-work
