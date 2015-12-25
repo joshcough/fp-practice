@@ -20,7 +20,7 @@ object Functions {
   def lookup(v: String, env: Env): RuntimeValue =
     env.getOrElse(v, sys.error(s"unbound variable: $v, env: $env"))
 
-  def interp(exp: Exp, env: Env=Map()): RuntimeValue = exp match {
+  def eval(exp: Exp, env: Env=Map()): RuntimeValue = exp match {
     case Num (i)        => ???
     case Add (l,r)      => ???
     case Mult(l,r)      => ???

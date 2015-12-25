@@ -2,6 +2,7 @@ package print
 
 import org.scalacheck.Prop._
 import org.scalacheck.Properties
+import PrintAST._
 import PrintStdOut._
 
 object PrintStdOutTests extends Properties("PrintStdOut") {
@@ -21,7 +22,7 @@ object PrintStdOutTests extends Properties("PrintStdOut") {
   test((Print(5.n) + Print(6.n)) + (Print(5.n) * Print(5.n)) mustBe 36)
 
   def test(t: (Exp,Int)): Unit = {
-    property(t._1.toString) = secure { interp(t._1) == t._2 }
+    property(t._1.toString) = secure { eval(t._1) == t._2 }
     ()
   }
 

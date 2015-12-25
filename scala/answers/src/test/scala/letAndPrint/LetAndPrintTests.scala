@@ -1,10 +1,23 @@
-package print
+package letAndPrint
 
-import StatementBlocks._
+import LetAndPrint._
 import org.scalacheck.Prop._
 import org.scalacheck.Properties
 
-object StatementBlocksTests extends Properties("LetAndPrintStatementBlocksTests") {
+object LetAndPrintNaiveTests extends
+  LetAndPrintTests(LetAndPrintNaive)
+
+object LetAndPrintWriterTests extends
+  LetAndPrintTests(LetAndPrint_Writer)
+
+object LetAndPrintReaderTWriterTests extends
+  LetAndPrintTests(LetAndPrint_ReaderT_Writer)
+
+object LetAndPrint_WriterT_ReaderTests extends
+  LetAndPrintTests(LetAndPrint_WriterT_Reader)
+
+abstract class LetAndPrintTests(interp: Interpreter)
+  extends Properties(interp.getClass.getName) {
 
   // tests from FirstLang
   test(7.n mustBe (Nil, 7))
@@ -27,13 +40,13 @@ object StatementBlocksTests extends Properties("LetAndPrintStatementBlocksTests"
   test("x" -> 9.n in ("y" ->  8.n in ("x" -> 7.n in v"y" * v"x")) mustBe (Nil, 56))
 
   // lets and prints together
-  test("x" -> 9.n in print(v"x") mustBe (List(9), 9))
-  test("x" -> print(9.n) in v"x" mustBe (List(9), 9))
-  test("x" -> print(9.n) in print(v"x") mustBe (List(9,9), 9))
+  test(("x" -> 9.n in print(v"x")) mustBe (List(9), 9))
+  test(("x" -> print(9.n) in v"x") mustBe (List(9), 9))
+  test(("x" -> print(9.n) in print(v"x")) mustBe (List(9,9), 9))
   test(("x" -> print(9.n) in
-         ("y" -> print(8.n) in
-           ("x" -> print(7.n) in
-             print(v"y" * v"x")))) mustBe (List(9,8,7,56), 56))
+    ("y" -> print(8.n) in
+      ("x" -> print(7.n) in
+        print(v"y" * v"x")))) mustBe (List(9,8,7,56), 56))
 
   // test statements
   test("x" -> print(9.n) in block(print(v"x")) mustBe (List(9,9), 9))
@@ -44,41 +57,19 @@ object StatementBlocksTests extends Properties("LetAndPrintStatementBlocksTests"
       print x
    */
   test("x" -> print(0.n) in block(
-        print(2.n),
-        print(1.n),
-        print(v"x")) mustBe (List(0,2,1,0), 0))
+    print(2.n),
+    print(1.n),
+    print(v"x")) mustBe (List(0,2,1,0), 0))
 
   def block(e:Exp*) = Statements(e.toList)
-
   def test(t: (Exp,List[Int],Int)): Unit = {
     property(t._1.toString) = secure {
-      val expr: Exp = t._1
-      val output: List[String] = t._2.map(_.toString)
-      val expectedRes: Int = t._3
-      val actual = interp(expr)
-      actual == (output -> expectedRes)
+      val exp: Exp = t._1
+      val list: List[String] = t._2.map(_.toString)
+      val res: Int = t._3
+      // TODO: abstract over interpreter
+      interp.interpret(exp) ?= (list -> res)
     }
     ()
-  }
-
-  implicit class Parser(val sc: StringContext) extends AnyVal {
-    def v(args: Any*): Var = Var(sc.parts.mkString)
-    def n(args: Any*): Num = Num(sc.parts.mkString.toInt)
-  }
-
-  implicit class RichExp(e:Exp) {
-    def +(e2: Exp) = Add(e, e2)
-    def *(e2: Exp) = Mult(e, e2)
-    def mustBe(printed: List[Int], value: Int) = (e, printed, value)
-  }
-
-  implicit class RichWhat(t: (String, Exp)) {
-    def in(e:Exp) = Let(t,e)
-  }
-
-  def print(e:Exp) = Print(e)
-
-  implicit class RichInt(i:Int) {
-    def n = Num(i)
   }
 }

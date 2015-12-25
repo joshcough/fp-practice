@@ -1,25 +1,11 @@
 package functions
 
+import Functions._
+
 object FunctionsAndPrint {
 
-  trait Exp {
-    def apply(e:Exp) = Apply(this, e)
-    def apply(i:Int) = Apply(this, Num(i))
-  }
-    case class Num(i:Int)                        extends Exp
-    case class Add (l:Exp, r:Exp)                extends Exp
-    case class Mult(l:Exp, r:Exp)                extends Exp
-    case class Print(e: Exp)                     extends Exp
-    case class Var (v: String)                   extends Exp
-    case class Let (v: (String, Exp), body: Exp) extends Exp
-    case class Function(arg: String,  body: Exp) extends Exp
-    case class Apply(func: Exp, arg: Exp)        extends Exp
+  case class Print(e: Exp) extends Exp
 
-  sealed trait RuntimeValue
-    case class NumV(i: Int) extends RuntimeValue
-    case class Closure(f:Function, env: Env) extends RuntimeValue
-
-  type Env    = Map[String, RuntimeValue]
   type Output = List[String]
 
   def lookup(v: String, env: Env, output: Output): RuntimeValue =
@@ -27,33 +13,40 @@ object FunctionsAndPrint {
       s"unbound variable, env: $env, output: ${output.mkString("\n")}"
     ))
 
-  def interp(exp: Exp, env: Env=Map(),
+  def eval(exp: Exp, env: Env=Map(),
              output: Output=List()): (Output, RuntimeValue) =
     exp match {
       case Num (i)       => (output, NumV(i))
       case Add (l,r)     =>
-        val (lo,lv) = interp(l,env,output)
-        val (ro,rv) = interp(r,env,lo)
+        val (lo,lv) = eval(l,env,output)
+        val (ro,rv) = eval(r,env,lo)
         (ro,math(lv,rv)(_+_))
       case Mult(l,r)     =>
-        val (lo,lv) = interp(l,env,output)
-        val (ro,rv) = interp(r,env,lo)
+        val (lo,lv) = eval(l,env,output)
+        val (ro,rv) = eval(r,env,lo)
         (ro,math(lv,rv)(_*_))
+      case Eq  (l,r) =>
+        val (lo,lv)  = eval(l,env,output)
+        val (ro,rv)  = eval(r,env,lo)
+        (ro, math(lv,rv)((ll,rr) => if (ll == rr) 1 else 0))
+      case If(predicate,tBranch,fBranch) =>
+        val (po,pv)  = eval(predicate,env,output)
+        eval(if(pv == NumV(1)) tBranch else fBranch, env, po)
       case Var (x)       => (output, lookup(x, env, output))
       case Let ((x,e),b) =>
-        val (nextOutput,eValue) = interp(e, env, output)
-        interp(b, env + (x -> eValue), nextOutput)
+        val (nextOutput,eValue) = eval(e, env, output)
+        eval(b, env + (x -> eValue), nextOutput)
       case Print(e)      =>
-        val (nextOutput,eValue) = interp(e, env, output)
+        val (nextOutput,eValue) = eval(e, env, output)
         val newString = eValue match {
           case NumV(i) => i.toString
           case Closure(_, _) => "<function>"
         }
         (nextOutput ++ List(newString), eValue)
-      case Apply(fexp, a) => interp(fexp, env) match {
+      case Apply(fexp, a) => eval(fexp, env) match {
         case (o,Closure(func,cEnv)) =>
-          val (o2,arg) = interp(a, env, o)
-          interp(func.body, cEnv + (func.arg -> arg), o2)
+          val (o2,arg) = eval(a, env, o)
+          eval(func.body, cEnv + (func.arg -> arg), o2)
         case (o,NumV(i)) => sys.error(s"$i is not a function. Output: $output")
       }
       case f:Function => (output, Closure(f, env))
@@ -66,8 +59,4 @@ object FunctionsAndPrint {
       case bad => sys.error(s"can't add: $bad")
     }
 
-  implicit class Parser(val sc: StringContext) extends AnyVal {
-    def v(args: Any*): Var = Var(sc.parts.mkString)
-    def n(args: Any*): Num = Num(sc.parts.mkString.toInt)
-  }
 }

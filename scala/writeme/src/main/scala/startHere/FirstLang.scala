@@ -2,7 +2,7 @@ package startHere
 
 /**
   * Start Here
-  * Your job is to fill in the ???s in interp.
+  * Your job is to fill in the ???s in eval.
   * You can then run the tests for it in sbt like so:
   *
   * > project writeme
@@ -32,7 +32,7 @@ object FirstLang {
     * @return an Int that is the final value of the expression.
     *         For example, Add(Num(1),Num(2)) should return 3.
     */
-  def interp(exp: Exp): Int = exp match {
+  def eval(exp: Exp): Int = exp match {
     case Num (i)   => ???
     case Add (l,r) => ???
     case Mult(l,r) => ???

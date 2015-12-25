@@ -17,7 +17,7 @@ object LetLang {
   def lookup(v: String, env: Env): Int =
     env.getOrElse(v, sys.error(s"unbound variable: $v, env: $env"))
 
-  def interp(exp: Exp, env: Env=Map()): Int = exp match {
+  def eval(exp: Exp, env: Env=Map()): Int = exp match {
     case Num (i)       => ???
     case Add (l,r)     => ???
     case Mult(l,r)     => ???

@@ -1,4 +1,4 @@
-package print.scalaz
+package letAndPrint.scalaz
 
 // With Writer Monad
 object PrintZLang {
@@ -30,7 +30,7 @@ object PrintZLang {
   def lookup(v: String, env: Env): W[Int] =
     env.getOrElse(v, die(s"unbound variable: $v", env)).pure[W]
 
-  def interp(exp: Exp, env: Env=Map()): W[Int]  =
+  def eval(exp: Exp, env: Env=Map()): W[Int]  =
     exp match {
       case Num (i)        => ???
       case Add (l,r)      => ???

@@ -96,7 +96,7 @@ object MemoryTests extends Properties("MemoryTests") {
       val exp: Exp = t._1
       val res: Int = t._2
       val mem: Mem = t._3
-      interp(exp) == (res -> mem)
+      eval(exp) == (res -> mem)
     }
 
   implicit class Parser(val sc: StringContext) extends AnyVal {

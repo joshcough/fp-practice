@@ -40,15 +40,15 @@ object FunctionsFree {
   def lookup[A](v: String, env: Env[A]): RuntimeValue[A] =
     env.getOrElse(v, sys.error(s"unbound variable: $v, env: $env"))
 
-  def interp[A](exp: Exp[A], env:  Env[A])
+  def eval[A](exp: Exp[A], env:  Env[A])
                (implicit m: Monoid[A]): RuntimeValue[A] = exp match {
     case Prim(a)        => PrimV(a)
-    case Add (l,r)      => math(interp(l,env), interp(r,env))
+    case Add (l,r)      => math(eval(l,env), eval(r,env))
     case Var (x)        => lookup(x, env)
-    case Let ((x,e),b)  => interp(b, env + (x -> interp(e, env)))
-    case Apply(fexp, a) => interp(fexp, env) match {
+    case Let ((x,e),b)  => eval(b, env + (x -> eval(e, env)))
+    case Apply(fexp, a) => eval(fexp, env) match {
       case Closure(func,cEnv) =>
-        interp(func.body, cEnv + (func.arg -> interp(a, env)))
+        eval(func.body, cEnv + (func.arg -> eval(a, env)))
       case PrimV(bad) => sys.error(s"$bad is not a function.")
     }
     case f@(Function(_, _)) => Closure(f, env)
@@ -61,7 +61,7 @@ object FunctionsFree {
     }
 
   def run[A](exp: Exp[A], expected: RuntimeValue[A])(implicit m: Monoid[A]) = {
-    val i: RuntimeValue[A] = interp[A](exp, Map())
+    val i: RuntimeValue[A] = eval[A](exp, Map())
     if(i!=expected) sys.error(s"expected: $expected, but got: $i")
     else println(i)
   }
@@ -93,7 +93,7 @@ object FunctionsFree {
       a <- add(x, 6)
     } yield a
 
-//    val x = Free.runFC(test)(interp).run(Map.empty[String, Int])._2
+//    val x = Free.runFC(test)(eval).run(Map.empty[String, Int])._2
   }
 
   def add[A](l: A, r: A)(implicit m: Monoid[A]) =

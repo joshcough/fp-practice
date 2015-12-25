@@ -12,46 +12,48 @@ import scalaz.syntax.traverse._
 import scalaz.std.list._
 
 /**
+  * EitherT/State
+  *
 [20:54:18]  <edwardk>	EitherT e (State s)
 [20:55:17]  <edwardk>	running that with an input state gives you back a pair of Either e a  and a state
 [20:55:43]  <joshcough>	EitherT  gives you back a pair?
 [20:55:44]  <edwardk>	on the other hand StateT s (Either e) will give back back Either e (a, s)
 [20:56:18]  <edwardk>	so EitherT e (State s) a ~ s -> (Either e a, s)    while StateT s (Either e) a ~ s -> Either e (a, s)
   */
-object EverythingZInterpreter extends Interpreter {
+object EverythingInterpreterZ extends Interpreter {
 
   override def interpret(exp: Exp): (String \/ RuntimeValue, ProgramState) =
-    interp(exp).run.run(ProgramState()).swap
+    eval(exp).run.run(ProgramState()).swap
 
   type S[A] = State[ProgramState, A]
   type E[A] = EitherT[S, String, A]
 
-  def interp(exp: Exp): E[RuntimeValue] =
+  def eval(exp: Exp): E[RuntimeValue] =
     exp match {
       case Num (i)        => numV_E(i)
       case Add (l,r)      => mathInterp(l, r)(_+_)
       case Mult(l,r)      => mathInterp(l, r)(_*_)
       case Var (x)        => lookup(x)
-      case Let ((x,e),b)  => interp(Apply(Function(x, b), e))
-      case Print(e)       => for { ev <- interp(e); _ <- print(ev) } yield ev
+      case Let ((x,e),b)  => eval(Apply(Function(x, b), e))
+      case Print(e)       => for { ev <- eval(e); _ <- print(ev) } yield ev
       case Apply(fexp, a) => for {
         c   <- interpClosure(fexp)
-        v   <- interp(a)
-        res <- localE(_ => c.env + (c.f.arg -> v))(interp(c.f.body))
+        v   <- eval(a)
+        res <- localE(_ => c.env + (c.f.arg -> v))(eval(c.f.body))
       } yield res
       case f:Function     => lift(get[ProgramState].map(p => closure(f, p.env)))
       case SetMem(address, e) => for {
-        addr   <- interp(address)
-        newVal <- interp(e)
+        addr   <- eval(address)
+        newVal <- eval(e)
         res    <- withAddress(addr)(writeMem(_, newVal))
       } yield numV(0)
       case GetMem(address) => for {
-        addr <- interp(address)
+        addr <- eval(address)
         res  <- withAddress(addr)(readMem)
       } yield res
       case Statements(es) =>
         // for empty statement blocks, we just return 0.
-        es.traverse(interp).map(_.lastOption.getOrElse(numV(0)))
+        es.traverse(eval).map(_.lastOption.getOrElse(numV(0)))
     }
 
   def liftV[A](s:S[String \/ A]): E[A] = EitherT[S, String, A](s)
@@ -93,14 +95,14 @@ object EverythingZInterpreter extends Interpreter {
     addr.fold(f(_), (_,_) => err("<function> is not an address"))
 
   def interpClosure(e:Exp): E[Closure] = for {
-    v   <- interp(e)
+    v   <- eval(e)
     res <- v.fold(n => err(s"expected <function>, but got $n"), Closure(_,_).point[E])
   } yield res
 
   def mathInterp(l:Exp, r: Exp)(f: (Int, Int) => Int): E[RuntimeValue] =
     for {
-      lx  <- interp(l)
-      rx  <- interp(r)
+      lx  <- eval(l)
+      rx  <- eval(r)
       res <- math(lx, rx)(f)
     } yield res
 

@@ -13,7 +13,7 @@ object PrintStdOut {
     case class Mult (l:Exp, r:Exp) extends Exp
     case class Print(e: Exp)       extends Exp
 
-  def interp(exp: Exp): Int  =
+  def eval(exp: Exp): Int  =
     exp match {
       case Num (i)   => ???
       case Add (l,r) => ???

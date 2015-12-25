@@ -26,7 +26,7 @@ object MemoryLang {
   def readMem(addr: Int, mem: Mem, env: Env): Int =
     mem.getOrElse(addr, sys.error(s"null pointer: $addr, env: $env"))
 
-  def interp(exp: Exp,
+  def eval(exp: Exp,
              env: Env=Map(),
              mem: Mem=Map()): (Int,Mem) = exp match {
     case Num (i)          => ???
@@ -40,7 +40,7 @@ object MemoryLang {
   }
 
   def run(exp: Exp, expected: Int) = {
-    val (i,m) = interp(exp)
+    val (i,m) = eval(exp)
     if(i!=expected) sys.error(s"expected: $expected, but got: $i")
   }
 }
@@ -77,7 +77,7 @@ object MemoryLangZ {
   def readMem(addr: Int, mem: Mem, env: Env): Int =
     mem.getOrElse(addr, sys.error(s"null pointer: $addr, env: $env"))
 
-  def interp(exp: Exp, env: Env=Map()): MemState[Int] = exp match {
+  def eval(exp: Exp, env: Env=Map()): MemState[Int] = exp match {
     case Num (i)       => ???
     case Add (l,r)     => ???
     case Mult (l,r)    => ???

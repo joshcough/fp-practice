@@ -1,6 +1,7 @@
 package functions
 
-import functions.FunctionsAndPrint._
+import Functions._
+import FunctionsAndPrint._
 import org.scalacheck.Prop._
 import org.scalacheck.Properties
 
@@ -62,7 +63,7 @@ object FunctionsAndPrintTest extends Properties("FunctionsTest") {
         print(v"y" * v"x")))) mustBe (List(9,8,7,56), 56))
 
   def test(t: (Exp,Output,RuntimeValue)): Unit = {
-    property(t._1.toString) = secure { interp(t._1) == (t._2 -> t._3) }
+    property(t._1.toString) = secure { eval(t._1) == (t._2 -> t._3) }
     ()
   }
 

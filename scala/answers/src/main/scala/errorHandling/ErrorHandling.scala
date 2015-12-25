@@ -9,6 +9,8 @@ object ErrorHandling {
     case class Num(i:Int)                       extends Exp
     case class Add (l:Exp, r:Exp)               extends Exp
     case class Mult(l:Exp, r:Exp)               extends Exp
+    case class Eq  (l:Exp, r: Exp)              extends Exp
+    case class If  (p:Exp, t:Exp, f:Exp)        extends Exp
     case class Var (v: String)                  extends Exp
     case class Let (v: (String, Exp), body:Exp) extends Exp
 
@@ -16,20 +18,28 @@ object ErrorHandling {
 
   object LetLangOption {
 
-    def interp(exp: Exp, env: Env=Map()): Option[Int] = exp match {
+    def eval(exp: Exp, env: Env=Map()): Option[Int] = exp match {
       case Num (i)   => Some(i)
       case Add (l,r) => for {
-        ll <- interp(l,env)
-        rr <- interp(r,env)
-      } yield ll + rr
+        li <- eval(l,env)
+        ri <- eval(r,env)
+      } yield li + ri
       case Mult(l,r) => for {
-        ll <- interp(l,env)
-        rr <- interp(r,env)
-      } yield ll * rr
+        li <- eval(l,env)
+        ri <- eval(r,env)
+      } yield li * ri
+      case Eq  (l,r) => for {
+        li <- eval(l,env)
+        ri <- eval(r,env)
+      } yield if(li == ri) 1 else 0
+      case If(p,t,f) => for {
+        x   <- eval(p)
+        res <- if(x == 1) eval (t) else eval(f)
+      } yield res
       case Var (v)   => env.get(v)
       case Let ((x,e),b) => for {
-        eValue <- interp(e, env)
-        z      <- interp(b, env + (x -> eValue))
+        eValue <- eval(e, env)
+        z      <- eval(b, env + (x -> eValue))
       } yield z
     }
   }
@@ -45,26 +55,34 @@ object ErrorHandling {
         e.fold(Left(_), (a: A) => f(a))
     }
 
-    def interp(exp: Exp, env: Env=Map()): Result = exp match {
+    def eval(exp: Exp, env: Env=Map()): Result = exp match {
       case Num (i)   => Right(i)
       case Add (l,r) => for {
-        ll <- interp(l,env)
-        rr <- interp(r,env)
-      } yield ll + rr
+        li <- eval(l,env)
+        ri <- eval(r,env)
+      } yield li + ri
       case Mult(l,r) => for {
-        ll <- interp(l,env)
-        rr <- interp(r,env)
-      } yield ll * rr
+        li <- eval(l,env)
+        ri <- eval(r,env)
+      } yield li * ri
+      case Eq  (l,r) => for {
+        li <- eval(l,env)
+        ri <- eval(r,env)
+      } yield if(li == ri) 1 else 0
+      case If(p,t,f) => for {
+        x   <- eval(p)
+        res <- if(x == 1) eval (t) else eval(f)
+      } yield res
       case Var (v)   => env.get(v)
         .fold[Result](Left(s"unbound variable $v"))(Right(_))
       case Let ((x,e),b) => for {
-        eValue <- interp(e, env)
-        z      <- interp(b, env + (x -> eValue))
+        eValue <- eval(e, env)
+        z      <- eval(b, env + (x -> eValue))
       } yield z
     }
 
     def run(exp: Exp, expected: Either[String, Int]) = {
-      val i = interp(exp)
+      val i = eval(exp)
       if(i!=expected) sys.error(s"expected: $expected, but got: $i")
     }
   }
@@ -76,21 +94,29 @@ object ErrorHandling {
 
     type Result = String \/ Int
 
-    def interp(exp: Exp, env: Env=Map()): Result = exp match {
+    def eval(exp: Exp, env: Env=Map()): Result = exp match {
       case Num (i)   => i.right
       case Add (l,r) => for {
-        ll <- interp(l,env)
-        rr <- interp(r,env)
-      } yield ll + rr
+        li <- eval(l,env)
+        ri <- eval(r,env)
+      } yield li + ri
       case Mult(l,r) => for {
-        ll <- interp(l,env)
-        rr <- interp(r,env)
-      } yield ll * rr
+        li <- eval(l,env)
+        ri <- eval(r,env)
+      } yield li * ri
+      case Eq  (l,r) => for {
+        li <- eval(l,env)
+        ri <- eval(r,env)
+      } yield if(li == ri) 1 else 0
+      case If(p,t,f) => for {
+        x   <- eval(p)
+        res <- if(x == 1) eval (t) else eval(f)
+      } yield res
       case Var (v)   => env.get(v)
         .fold[Result](s"unbound variable $v".left)(_.right)
       case Let ((x,e),b) => for {
-        eValue <- interp(e, env)
-        z      <- interp(b, env + (x -> eValue))
+        eValue <- eval(e, env)
+        z      <- eval(b, env + (x -> eValue))
       } yield z
     }
   }
@@ -104,28 +130,36 @@ object ErrorHandling {
     def lookup(v: String, env: Env): Int =
       env.getOrElse(v, sys.error(s"unbound variable: $v, env: $env"))
 
-    def interp[F[_]](exp: Exp, env: Env=Map())
+    def eval[F[_]](exp: Exp, env: Env=Map())
                     (implicit m: Monad[F]): F[Int] =
       exp match {
         case Num (i)   => m.point(i)
         case Add (l,r) => for {
-          ll <- interp(l,env)
-          rr <- interp(r,env)
-        } yield ll + rr
+          li <- eval(l,env)
+          ri <- eval(r,env)
+        } yield li + ri
         case Mult(l,r) => for {
-          ll <- interp(l,env)
-          rr <- interp(r,env)
-        } yield ll * rr
+          li <- eval(l,env)
+          ri <- eval(r,env)
+        } yield li * ri
+        case Eq  (l,r) => for {
+          li <- eval(l,env)
+          ri <- eval(r,env)
+        } yield if(li == ri) 1 else 0
+        case If(p,t,f) => for {
+          x   <- eval(p)
+          res <- if(x == 1) eval (t) else eval(f)
+        } yield res
         case Var (v)   => lookup(v, env).point[F]
         case Let ((x,e),b) => for {
-          eValue <- interp(e, env)
-          z      <- interp(b, env + (x -> eValue))
+          eValue <- eval(e, env)
+          z      <- eval(b, env + (x -> eValue))
         } yield z
       }
 
     def run[F[_]](exp: Exp, expected: F[Int])
                  (implicit m: Monad[F]): F[Int] = {
-      val i = interp(exp)
+      val i = eval(exp)
       if(i!=expected) sys.error(s"expected: $expected, but got: $i")
       i
     }
@@ -146,11 +180,11 @@ object ErrorHandling {
 
       // some more advanced monads
       type S[A] = State[Int, A]
-      println(interp[S](Num(6)).run(0))
+      println(eval[S](Num(6)).run(0))
       type W[A] = Writer[Int, A]
-      println(interp[W](Num(6)).run)
+      println(eval[W](Num(6)).run)
       type R[A] = Reader[Int, A]
-      println(interp[R](Num(6)).run(0))
+      println(eval[R](Num(6)).run(0))
 
       // this shows that they will all fail in the same way.
       // this is because Monad by itself doesn't do error handling.
@@ -177,28 +211,36 @@ object ErrorHandling {
       env.get(v).fold[F[String, Int]](
         s"unbound variable $v".raiseError[F,Int])((i: Int) => m.point(i))
 
-    def interp[F[_,_]](exp: Exp, env: Env=Map())
+    def eval[F[_,_]](exp: Exp, env: Env=Map())
                       (implicit m: MonadError[F, String]): F[String, Int] =
       exp match {
         case Num (i)   => m.point(i)
         case Add (l,r) => for {
-          ll <- interp(l,env)
-          rr <- interp(r,env)
-        } yield ll + rr
+          li <- eval(l,env)
+          ri <- eval(r,env)
+        } yield li + ri
         case Mult(l,r) => for {
-          ll <- interp(l,env)
-          rr <- interp(r,env)
-        } yield ll * rr
+          li <- eval(l,env)
+          ri <- eval(r,env)
+        } yield li * ri
+        case Eq  (l,r) => for {
+          li <- eval(l,env)
+          ri <- eval(r,env)
+        } yield if(li == ri) 1 else 0
         case Var (v)   => lookup(v, env)
+        case If(p,t,f) => for {
+          x   <- eval(p)
+          res <- if(x == 1) eval (t) else eval(f)
+        } yield res
         case Let ((x,e),b) => for {
-          eValue <- interp(e, env)
-          z      <- interp(b, env + (x -> eValue))
+          eValue <- eval(e, env)
+          z      <- eval(b, env + (x -> eValue))
         } yield z
       }
 
     def run[F[_,_]](exp: Exp, expected: F[String, Int])
                    (implicit m: MonadError[F, String]): F[String, Int] = {
-      val i = interp(exp)
+      val i = eval(exp)
       if(i!=expected) sys.error(s"expected: $expected, but got: $i")
       i
     }
@@ -222,7 +264,7 @@ object ErrorHandling {
 
   //
   //type T[E, A] = MonadError[WriterT[String \/ ?, ?, A] , E]
-  //println(interp[T](Num(6)).run)
+  //println(eval[T](Num(6)).run)
   // hmmmm
   //(Monoid w, MonadError e m) => MonadError e (WriterT w m)
   //(Monoid w, Monad m) => MonadWriter w (WriterT w m)

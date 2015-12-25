@@ -21,7 +21,7 @@ object LetTests extends Properties("Let") {
   test(Let(("x",  9.n), Let(("y",  8.n), Let(("x",  7.n), v"y" * v"x"))) mustBe 56)
 
   def test(t: (Exp,Int)): Unit = {
-    property(t._1.toString) = secure { interp(t._1) == t._2 }
+    property(t._1.toString) = secure { eval(t._1) == t._2 }
     ()
   }
 

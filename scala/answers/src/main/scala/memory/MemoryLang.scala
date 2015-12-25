@@ -50,38 +50,38 @@ object MemoryLang {
   def readMem(addr: Int, mem: Mem, env: Env): Int =
     mem.getOrElse(addr, sys.error(s"null pointer: $addr, env: $env"))
 
-  def interp(exp: Exp, env: Env=Map(),
+  def eval(exp: Exp, env: Env=Map(),
              mem: Mem=Map()): (Int,Mem) = exp match {
     case Num (i)   => (i,mem)
     case Add (l,r) =>
-      val (il,meml) = interp(l,env, mem)
-      val (ir,memr) = interp(r,env, meml)
+      val (il,meml) = eval(l,env, mem)
+      val (ir,memr) = eval(r,env, meml)
       (il+ir, memr)
     case Mult(l,r) =>
-      val (il,meml) = interp(l,env, mem)
-      val (ir,memr) = interp(r,env, meml)
+      val (il,meml) = eval(l,env, mem)
+      val (ir,memr) = eval(r,env, meml)
       (il*ir, memr)
     case Var (x)   => (lookup(x,env,mem), mem)
     case Let ((x,e),b) =>
-      val (eValue,memx) = interp(e, env, mem)
-      interp(b, env + (x -> eValue), memx)
+      val (eValue,memx) = eval(e, env, mem)
+      eval(b, env + (x -> eValue), memx)
     case SetMem(address: Exp, e:Exp) =>
-      val (addrValue,memA) = interp(address, env, mem)
-      val (eValue,memE) = interp(e, env, memA)
+      val (addrValue,memA) = eval(address, env, mem)
+      val (eValue,memE) = eval(e, env, memA)
       // we can return any value here...
       // i chose to have set return 0 always.
       (0, memE + (addrValue -> eValue))
     case GetMem(address: Exp) =>
-      val (addrValue,memA) = interp(address, env, mem)
+      val (addrValue,memA) = eval(address, env, mem)
       (readMem(addrValue, mem, env), memA)
     case Statements(es)    =>
       es.foldLeft((0,mem)){ case ((_,memacc),e) =>
-        interp(e, env, memacc)
+        eval(e, env, memacc)
       }
   }
 
   def run(exp: Exp, expected: Int) = {
-    val (i,m) = interp(exp)
+    val (i,m) = eval(exp)
     if(i!=expected) sys.error(s"expected: $expected, but got: $i")
   }
 }

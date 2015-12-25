@@ -40,7 +40,7 @@ object LetAndPrintTests extends Properties("LetAndPrint") {
       val exp: Exp = t._1
       val list: List[String] = t._2.map(_.toString)
       val res: Int = t._3
-      interp(exp) == (list -> res)
+      eval(exp) == (list -> res)
     }
     ()
   }

@@ -44,7 +44,8 @@ object FunctionsTest extends Properties("FunctionsTest") {
   test(x -> 9.n in (y -> 8.n in (x -> 7.n in y.v * x.v)) mustBe 56)
 
   def test(t: (Exp,RuntimeValue)): Unit = {
-    property(t._1.toString) = secure { interp(t._1) == t._2 }
+    // TODO: abstract
+    property(t._1.toString) = secure { FunctionsNaive.eval(t._1) == t._2 }
     ()
   }
 

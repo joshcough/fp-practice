@@ -1,19 +1,20 @@
 package print
 
+import PrintAST._
+
 object PrintStdOut {
 
-  trait Exp
-    case class Num  (i:Int)        extends Exp
-    case class Add  (l:Exp, r:Exp) extends Exp
-    case class Mult (l:Exp, r:Exp) extends Exp
-    case class Print(e: Exp)       extends Exp
-
-  def interp(exp: Exp): Int  = exp match {
+  def eval(exp: Exp): Int  = exp match {
     case Num (i)   => i
-    case Add (l,r) => interp(l) + interp(r)
-    case Mult(l,r) => interp(l) * interp(r)
+    case Add (l,r) => eval(l) + eval(r)
+    case Mult(l,r) => eval(l) * eval(r)
+    case Eq  (l,r) =>
+      if(eval(l) ==  eval(r)) 1 else 0
+    case If(predicate,tBranch,fBranch) =>
+      val pv = eval(predicate)
+      eval(if(pv == 1) tBranch else fBranch)
     case Print(e)  =>
-      val i = interp(e)
+      val i = eval(e)
       println(i)
       i
   }

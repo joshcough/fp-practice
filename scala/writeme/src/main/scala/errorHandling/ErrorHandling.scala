@@ -19,7 +19,7 @@ object ErrorHandling {
     */
   object LetLangOption {
 
-    def interp(exp: Exp, env: Env=Map()): Option[Int] =
+    def eval(exp: Exp, env: Env=Map()): Option[Int] =
       exp match {
         case Num (i)       => ???
         case Add (l,r)     => ???
@@ -43,7 +43,7 @@ object ErrorHandling {
         e.fold(Left(_), (a: A) => f(a))
     }
 
-    def interp(exp: Exp, env: Env=Map()): Result =
+    def eval(exp: Exp, env: Env=Map()): Result =
       exp match {
         case Num (i)       => ???
         case Add (l,r)     => ???
@@ -63,7 +63,7 @@ object ErrorHandling {
 
     type Result = String \/ Int
 
-    def interp(exp: Exp, env: Env=Map()): Result =
+    def eval(exp: Exp, env: Env=Map()): Result =
       exp match {
         case Num (i)       => ???
         case Add (l,r)     => ???
@@ -85,7 +85,7 @@ object ErrorHandling {
     def lookup(v: String, env: Env): Int =
       env.getOrElse(v, sys.error(s"unbound variable: $v, env: $env"))
 
-    def interp[F[_]](exp: Exp, env: Env=Map())
+    def eval[F[_]](exp: Exp, env: Env=Map())
                     (implicit m: Monad[F]): F[Int] =
       exp match {
         case Num (i)       => ???
@@ -119,7 +119,7 @@ object ErrorHandling {
       env.get(v).fold[F[String, Int]](
         s"unbound variable $v".raiseError[F,Int])((i: Int) => m.point(i))
 
-    def interp[F[_,_]](exp: Exp, env: Env=Map())
+    def eval[F[_,_]](exp: Exp, env: Env=Map())
                       (implicit m: MonadError[F, String]): F[String, Int] =
       exp match {
         case Num (i)   =>     ???

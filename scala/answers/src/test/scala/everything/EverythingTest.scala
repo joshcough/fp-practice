@@ -14,7 +14,7 @@ object EverythingNaiveInterpreterTest
   extends EverythingTest(EverythingNaiveInterpreter)
 
 object EverythingZInterpreterTest
-  extends EverythingTest(EverythingZInterpreter)
+  extends EverythingTest(EverythingInterpreterZ)
 
 /**
   * Created by jcough on 11/29/15.

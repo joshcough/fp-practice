@@ -15,4 +15,10 @@ object LetAST {
     case class Let (v: (String, Exp), body:Exp) extends Exp
 
   type Env = Map[String, Int]
+
+
+  implicit class Parser(val sc: StringContext) extends AnyVal {
+    def v(args: Any*): Var = Var(sc.parts.mkString)
+    def n(args: Any*): Num = Num(sc.parts.mkString.toInt)
+  }
 }

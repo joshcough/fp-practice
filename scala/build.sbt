@@ -1,16 +1,16 @@
 name := "fp-practice"
 
 lazy val fpPractice = Project(
-  id = "fp-practice", base = file("."), aggregate = Seq(answers, writeme)
+  id = "fp-practice", base = file("."), aggregate = Seq(answers /*, writeme */)
 )
 
 lazy val answers = Project(id = "answers", base = file("answers"),
   settings = standardSettings ++ Seq(name := "answers")
 )
 
-lazy val writeme = Project(id = "writeme", base = file("writeme"),
-  settings = standardSettings ++ Seq(name := "writeme")
-)
+//lazy val writeme = Project(id = "writeme", base = file("writeme"),
+//  settings = standardSettings ++ Seq(name := "writeme")
+//)
 
 lazy val standardSettings: Seq[Def.Setting[_]] = {
   Seq[Def.Setting[_]](
@@ -23,6 +23,7 @@ lazy val standardSettings: Seq[Def.Setting[_]] = {
        "org.scalaz"     %% "scalaz-core"   % "7.1.5"
       ,"org.scalaz"     %% "scalaz-effect" % "7.1.5"
       ,"org.scalacheck" %% "scalacheck"    % "1.12.5" % "test"
+      ,"com.localytics" %% "logged-either" % "0.6-SNAPSHOT"
     )
     ,resolvers += Resolver.sonatypeRepo("releases")
     ,scalacOptions ++= Seq(

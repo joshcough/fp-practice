@@ -55,7 +55,7 @@ object LetAndPrintStatementBlocksTests extends Properties("LetAndPrintStatementB
       val expr: Exp = t._1
       val output: List[String] = t._2.map(_.toString)
       val expectedRes: Int = t._3
-      val actual = interp(expr)
+      val actual = eval(expr)
       actual == (output -> expectedRes)
     }
     ()

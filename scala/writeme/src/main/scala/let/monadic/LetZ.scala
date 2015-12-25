@@ -26,7 +26,7 @@ object LetZ {
   def lookup(v: String, env: Env): Int =
     env.getOrElse(v, sys.error(s"unbound variable: $v, env: $env"))
 
-  def interp(exp: Exp): R[Int] = exp match {
+  def eval(exp: Exp): R[Int] = exp match {
     case Num (i)       => ???
     case Add (l,r)     => ???
     case Mult(l,r)     => ???

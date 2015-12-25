@@ -1,22 +1,16 @@
-package print
+package letAndPrint
 
-object LetAndPrint {
+import LetAndPrint._
 
-  trait Exp
-    case class Num  (i:Int)                      extends Exp
-    case class Add  (l:Exp, r:Exp)               extends Exp
-    case class Mult (l:Exp, r:Exp)               extends Exp
-    case class Var  (v: String)                  extends Exp
-    case class Let  (v: (String, Exp), body:Exp) extends Exp
-    case class Print(e: Exp)                     extends Exp
+/**
+  * Created by jcough on 12/24/15.
+  */
+object LetAndPrintNaive extends Interpreter {
 
-  type Env    = Map[String, Int]
-  type Output = List[String]
+  def interpret(e:Exp): (Output, Int) = eval(e)
 
   def lookup(v: String, env: Env, output: Output): Int =
-    env.getOrElse(v, sys.error(
-      s"unbound variable, env: $env, output: ${output.mkString("\n")}"
-    ))
+    env.getOrElse(v, die(s"unbound variable: $v", env))
 
   def eval(exp: Exp, env: Env=Map(),
              output: Output=List()): (Output, Int) =
@@ -30,6 +24,13 @@ object LetAndPrint {
         val (lo,lv) = eval(l,env,output)
         val (ro,rv) = eval(r,env,lo)
         (ro,lv*rv)
+      case Eq  (l,r) =>
+        val (lo,lv)  = eval(l,env,output)
+        val (ro,rv)  = eval(r,env,lo)
+        (ro, if(lv == rv) 1 else 0)
+      case If(predicate,tBranch,fBranch) =>
+        val (po,pv)  = eval(predicate,env,output)
+        eval(if(pv == 1) tBranch else fBranch, env, po)
       case Var (x)       => (output, lookup(x, env, output))
       case Let ((x,e),b) =>
         val (nextOutput,eValue) = eval(e, env, output)
@@ -37,5 +38,9 @@ object LetAndPrint {
       case Print(e)      =>
         val (nextOutput,eValue) = eval(e, env, output)
         (nextOutput ++ List(eValue.toString), eValue)
+      case Statements(es) =>
+        es.foldLeft((output,0)){ case ((outacc,_),e) =>
+          eval(e, env, outacc)
+        }
     }
 }

@@ -19,7 +19,7 @@ object LetAndPrintStatementBlocks {
       s"unbound variable: $v. env: $env, output: ${output.mkString("\n")}")
     )
 
-  def interp(exp: Exp, env: Env=Map(),
+  def eval(exp: Exp, env: Env=Map(),
              output: Output=List()): (Output, Int)  =
     exp match {
       case Num (i)        => ???

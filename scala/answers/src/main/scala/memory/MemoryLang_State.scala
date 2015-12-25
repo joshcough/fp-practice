@@ -2,8 +2,10 @@ package memory
 
 /**
   * Created by jcough on 11/29/15.
+  *
+  * Example of State Monad.
   */
-object MemoryLangZ {
+object MemoryLang_State {
 
   import scalaz.State
   import scalaz.State._
@@ -36,28 +38,28 @@ object MemoryLangZ {
   def readMem(addr: Int, mem: Mem, env: Env): Int =
     mem.getOrElse(addr, sys.error(s"null pointer: $addr, env: $env"))
 
-  def interp(exp: Exp, env: Env=Map()): MemState[Int] = exp match {
+  def eval(exp: Exp, env: Env=Map()): MemState[Int] = exp match {
     case Num (i)   => i.point[MemState]
     case Add (l,r) => for {
-      il <- interp(l, env)
-      ir <- interp(r, env)
+      il <- eval(l, env)
+      ir <- eval(r, env)
     } yield il + ir
     case Mult (l,r) => for {
-      il <- interp(l, env)
-      ir <- interp(r, env)
+      il <- eval(l, env)
+      ir <- eval(r, env)
     } yield il * ir
     case Var (x)   => lookup(x,env).point[MemState]
     case Let ((x,e),b) => for {
-      ev <- interp(e, env)
-      bv <- interp(b, env + (x -> ev))
+      ev <- eval(e, env)
+      bv <- eval(b, env + (x -> ev))
     } yield bv
     case SetMem(address, e) => for {
-      addr <- interp(address)
-      v    <- interp(e)
+      addr <- eval(address)
+      v    <- eval(e)
       _    <- modify[Mem](s => s + (addr -> v))
     } yield 0
     case GetMem(address) => for {
-      addr <- interp(address)
+      addr <- eval(address)
       m    <- get[Mem]
     } yield readMem(addr, m, env)
   }
