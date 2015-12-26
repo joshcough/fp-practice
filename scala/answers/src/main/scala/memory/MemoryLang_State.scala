@@ -1,16 +1,16 @@
 package memory
 
+import scalaz.State
+import scalaz.State._
+import scalaz.std.list._
+import scalaz.syntax.applicative._
+
 /**
   * Created by jcough on 11/29/15.
   *
   * Example of State Monad.
   */
 object MemoryLang_State {
-
-  import scalaz.State
-  import scalaz.State._
-  import scalaz.std.list._
-  import scalaz.syntax.applicative._
 
   trait Exp
     case class Num(i:Int)                       extends Exp
