@@ -16,6 +16,9 @@ object LetAndPrintReaderTWriterTests extends
 object LetAndPrint_WriterT_ReaderTests extends
   LetAndPrintTests(LetAndPrint_WriterT_Reader)
 
+object LetAndPrint_EitherT_ReaderT_WriterTests extends
+  LetAndPrintTests(LetAndPrint_EitherT_ReaderT_Writer)
+
 abstract class LetAndPrintTests(interp: Interpreter)
   extends Properties(interp.getClass.getName) {
 

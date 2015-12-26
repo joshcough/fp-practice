@@ -6,9 +6,7 @@ import scalaz.{Reader, WriterT}
 import scalaz.WriterT._
 import scalaz.Kleisli.{ask, local}
 import scalaz.Id.Id
-
 import scalaz.std.list._
-
 import scalaz.syntax.monad._
 import scalaz.syntax.traverse._
 import scalaz.syntax.writer._

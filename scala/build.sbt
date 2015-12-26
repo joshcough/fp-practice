@@ -23,7 +23,6 @@ lazy val standardSettings: Seq[Def.Setting[_]] = {
        "org.scalaz"     %% "scalaz-core"   % "7.1.5"
       ,"org.scalaz"     %% "scalaz-effect" % "7.1.5"
       ,"org.scalacheck" %% "scalacheck"    % "1.12.5" % "test"
-      ,"com.localytics" %% "logged-either" % "0.6-SNAPSHOT"
     )
     ,resolvers += Resolver.sonatypeRepo("releases")
     ,scalacOptions ++= Seq(

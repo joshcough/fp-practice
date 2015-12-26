@@ -12,7 +12,7 @@ object LetAndPrintNaive extends Interpreter {
   def lookup(v: String, env: Env, output: Output): Int =
     env.getOrElse(v, die(s"unbound variable: $v", env))
 
-  def eval(exp: Exp, env: Env=Map(),
+  def eval(exp: Exp,env: Env=Map(),
              output: Output=List()): (Output, Int) =
     exp match {
       case Num (i)       => (output, i)
