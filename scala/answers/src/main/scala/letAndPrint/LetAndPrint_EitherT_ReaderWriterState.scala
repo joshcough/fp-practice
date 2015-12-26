@@ -19,8 +19,8 @@ object LetAndPrint_EitherT_ReaderWriterState extends Interpreter {
   case class SetMem(address: Exp, e: Exp) extends Exp
   case class GetMem(address: Exp)         extends Exp
 
-  type RE[A]      = ReaderWriterState[Env,Output,Mem,String \/ A]
   type R[A]       = ReaderWriterState[Env,Output,Mem,A]
+  type RE[A]      = R[String \/ A]
   type B[E,A]     = EitherT[R,E,A]
   type Z[F[_], A] = EitherT[F,String,A]
   type E[A]       = Z[R, A]
@@ -45,11 +45,12 @@ object LetAndPrint_EitherT_ReaderWriterState extends Interpreter {
         lv <- eval(l)
         rv <- eval(r)
       } yield if (lv == rv) 1 else 0
-      case If(predicate,tBranch,fBranch) => for {
-        pv  <- eval(predicate)
-        res <- eval(if (pv == 1) tBranch else fBranch)
+      case If(p,t,f) => for {
+        pv  <- eval(p)
+        res <- eval(if (pv == 1) t else f)
       } yield res
-      case Var (x) => lookupEnv(s"unbound variable: $x")(x).e
+      case Var (x) =>
+        lookupEnv(s"unbound variable: $x")(x).e
       case Let ((x,e),b)  => for {
         ev  <- eval(e)
         bv  <- localE(x,ev,b).e
@@ -78,8 +79,8 @@ object LetAndPrint_EitherT_ReaderWriterState extends Interpreter {
     def e: E[A] = EitherT[R, String, A](rws.map(_.right))
   }
 
-  def print(i: Int): RE[Unit] = ReaderWriterState {
-    (_:Env, s:Mem) => (List(i.toString), ().right, s)
+  def print(i: Int): R[Unit] = ReaderWriterState {
+    (_:Env, s:Mem) => (List(i.toString), (), s)
   }
 
   def withEnv[A](f: Env => String \/ A): RE[A] =
