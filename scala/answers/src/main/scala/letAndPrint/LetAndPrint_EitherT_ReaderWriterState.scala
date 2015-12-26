@@ -19,11 +19,9 @@ object LetAndPrint_EitherT_ReaderWriterState extends Interpreter {
   case class SetMem(address: Exp, e: Exp) extends Exp
   case class GetMem(address: Exp)         extends Exp
 
-  type R[A]       = ReaderWriterState[Env,Output,Mem,A]
-  type RE[A]      = R[String \/ A]
-  type B[E,A]     = EitherT[R,E,A]
-  type Z[F[_], A] = EitherT[F,String,A]
-  type E[A]       = Z[R, A]
+  type R[A]  = ReaderWriterState[Env,Output,Mem,A]
+  type RE[A] = R[String \/ A]
+  type E[A]  = EitherT[R,String,A]
 
   def interpret(e:Exp): (Output, Int) = {
     val (o,v,m) = eval(e).run.run(Map(), Map())
