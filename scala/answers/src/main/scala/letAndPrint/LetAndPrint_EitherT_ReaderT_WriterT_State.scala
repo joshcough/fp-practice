@@ -67,27 +67,24 @@ object LetAndPrint_EitherT_ReaderT_WriterT_State extends Interpreter {
       } yield bv
       case Print(e) => for {
         ev <- eval(e)
-        _ <- (writerT((List(ev.toString), ev).point[S]): W[Int]).liftM[Y].liftM[Z]: E[Int]
+        _  <- writerE(writerT((List(ev.toString), ev).point[S]))
       } yield ev
       case SetMem(address, e) => for {
-        mem  <- getMem
+        mem  <- stateE(get[Mem])
         addr <- eval(address)
         ev   <- eval(e)
-        _    <- setMem(mem + (addr -> ev))
+        _    <- stateE(State.put(mem + (addr -> ev)))
       } yield 0
       case GetMem(address)    => for {
-        mem  <- getMem
+        mem  <- stateE(get[Mem])
         addr <- eval(address)
         res  <- lookup(s"null pointer: $addr")(addr,mem)
       } yield res
       case Statements(es) => es.foldlM(0)(_ => eval)
     }
 
-  def stateE[A](s:S[A]): E[A] = (s.liftM[U]: W[A]).liftM[Y].liftM[Z]
-
-  def getMem: E[Mem] = stateE(get[Mem])
-
-  def setMem(m: Mem): E[Unit] = stateE(State.put(m))
+  def writerE[A](w:W[A]): E[A] = w.liftM[Y].liftM[Z]
+  def stateE [A](s:S[A]): E[A] = writerE(s.liftM[U])
 
   def lookup[A](msg: => String)(v: A, m: Map[A,Int]): E[Int] =
     m.get(v).fold[B[String, Int]](
